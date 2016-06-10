@@ -1,0 +1,1 @@
+include ':toot-android', ':toot-runtime', ':toot-processor', ':toot-annotations', ':toot-core', ':toot-dummy'
