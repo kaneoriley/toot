@@ -61,16 +61,17 @@
 
             <h3 id="usage">Usage</h3>
             <p>Toot is designed with Android-specific use cases (although it can be used in Java only projects as well)
-             in mind and is intended for use as a singleton (optional). Create an instance of an event bus with
-             <pre class="prettyprint">Bus bus = new Bus();</pre> Because a bus is only effective if it is shared, we
-             recommend obtaining the instance through injection or another appropriate mechanism.</p>
+            in mind and is intended for use as a singleton (optional). Create an instance of an event bus with
+            <div class="codeblock"><pre class="prettyprint">Bus bus = new Bus();</pre></div>
+            Because a bus is only effective if it is shared, we recommend obtaining the instance through injection or
+            another appropriate mechanism.</p>
 
             <h4>Publishing</h4>
             <p>Event publishing is the most important part of the bus as it allows you to tell subscribers that an
             action has occurred. An instance of any class that extends <code>Event</code> may be published on the bus
             and it will only be dispatched to subscribers for that type.</p>
             <p>To publish a new event, call the <code>post</code> method:</p>
-            <pre class="prettyprint">bus.post(new AnswerAvailableEvent(42));</pre>
+            <div class="codeblock"><pre class="prettyprint">bus.post(new AnswerAvailableEvent(42));</pre></div>
             <p>Posting to the bus is a synchronous action so when program execution continues it is guaranteed that all
             subscribers have been called.</p>
 
@@ -79,16 +80,16 @@
             has occurred. To subscribe to an event, annotate a method with <code>@Subscribe</code>. The method should
             take only a single parameter, the type of which will be the event you wish to subscribe to.</p>
             <p>To listen for the event published in the previous section we would need the following:</p>
-            <pre class="prettyprint">@Subscribe
+            <div class="codeblock"><pre class="prettyprint">@Subscribe
 public void onAnswerAvailable(AnswerAvailableEvent event) {
     // TODO: React to the event somehow!
-}</pre>
+}</pre></div>
             <p>The name of the method can be anything you like. The annotation, single argument, and public accessor
             are all that is required.</p>
             <p>In order to receive events, a class instance needs to register with the bus. If <code>this</code> refers
             to an instance of the class in which the previous method was present, we can register using the
             following:</p>
-            <pre class="prettyprint">bus.register(this);</pre>
+            <div class="codeblock"><pre class="prettyprint">bus.register(this);</pre></div>
             <p>Registering will find methods on the current class type, as well as all super types. In the case that a
             parent class and subclass both wish to react to the same event, you must name the subscription methods
             differently, otherwise the method in the subclass will be called twice. This is an inherent Java limitation.
@@ -107,13 +108,13 @@ public void onAnswerAvailable(AnswerAvailableEvent event) {
             and its return type will be used as the type of event for which it can produce initial values. If we are
             keeping track of the last answer event somewhere from above we can register to produce its initial
             value:</p>
-            <pre class="prettyprint">@Produce
+            <div class="codeblock"><pre class="prettyprint">@Produce
 public AnswerAvailableEvent produceAnswerAvailable() {
     // Assuming 'lastAnswer' exists.
     return new AnswerAvailableEvent(this.lastAnswer);
-}</pre>
+}</pre></div>
             <p>Producers, like subscribers, must also be registered:</p>
-            <pre class="prettyprint">bus.register(this);</pre>
+            <div class="codeblock"><pre class="prettyprint">bus.register(this);</pre></div>
             <p>When registering, the producer method will be called once for each subscriber previously registered for
             the same type. The producer method will also be called once for each new method that subscribes to an event
             of the same type.</p>
@@ -123,9 +124,9 @@ public AnswerAvailableEvent produceAnswerAvailable() {
             <p>Since at times it may be ambiguous on which thread you are receiving callbacks, Toot provides an
             enforcement mechanism to ensure you are always called on the thread you desire. By default, all interaction
             is allowed to occur on any thread.</p>
-            <pre class="prettyprint">// Both of these are functionally equivalent.
+            <div class="codeblock"><pre class="prettyprint">// Both of these are functionally equivalent.
 Bus bus1 = new Bus();
-Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
+Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre></div>
 
             <p>If you wish to confine operations to the main thread, you must use the <code>toot-android</code> dependency,
             and instantiate the bus with a <code>UiThreadEnforcer</code>. The included <code>UiBus</code> class takes care
@@ -136,12 +137,12 @@ Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
             <p>The source code to Toot, and this website is <a href="http://github.com/oriley-me/toot">available on GitHub</a>.</p>
 
             <h4 id="download">Add JitPack.io to your projects repositories list</h4>
-            <pre class="prettyprint">repositories {
+            <div class="codeblock"><pre class="prettyprint">repositories {
     maven { url "https://jitpack.io" }
-}</pre>
+}</pre></div>
 
             <h4 id="download">Add the required dependencies to your app module</h4>
-            <pre class="prettyprint">dependencies {
+            <div class="codeblock"><pre class="prettyprint">dependencies {
     // Required
     provided 'com.github.oriley-me.toot:toot-annotations:x.y.z'
     apt 'com.github.oriley-me.toot:toot-processor:x.y.z'
@@ -151,7 +152,7 @@ Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
 
     // Use this if you want to handle threading yourself, or use Toot on a non Android project
     compile 'com.github.oriley-me.toot:toot-runtime:x.y.z'
-}</pre>
+}</pre></div>
 
             <p>Replace all version numbers <strong>x.y.z</strong> with the value shown in the JitPack badge shown above.</p>
 
@@ -160,7 +161,8 @@ Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
             so stick the official releases if you want things to be more predictable.</p>
 
             <h3 id="license">License</h3>
-            <pre>Copyright 2016 Kane O'Riley
+
+            <div class="codeblock"><pre>Copyright 2016 Kane O'Riley
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -172,7 +174,8 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
-limitations under the License.</pre>
+limitations under the License.</pre></div>
+
           </div>
           <div class="span3">
             <div class="content-nav" data-spy="affix" data-offset-top="80">

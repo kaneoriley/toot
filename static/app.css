@@ -156,10 +156,25 @@ p.license {
 
 pre, code {
   color: #666;
-}
-code {
   border: 0;
   background-color: transparent;
+}
+pre {
+  display:inline-block;
+  white-space:pre;
+}
+pre.prettyprint {
+  margin-bottom: 0px;
+}
+
+.codeblock {
+  width:100%;
+  overflow-x:auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 /* Widescreen desktop. */
@@ -183,7 +198,19 @@ code {
     top: 0;
     left: 0;
     width: 100%;
-    padding-left: 20px;
+  }
+  header h1 {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+  #introduction {
+    padding-top: 100px;
+  }
+  h3 {
+    padding-top: 48px;
+  }
+  .row .logo {
+    margin-top: 64px;
   }
   header menu {
     display: none;
@@ -193,9 +220,27 @@ code {
     top: 80px;
     left: 0;
     width: 100%;
-    padding-left: 20px;
+  }
+  #subtitle h2 {
+    margin-left: 20px;
+    margin-right: 20px;
   }
   .content-nav {
     display: none;
+  }
+}
+
+/* One-column mobile display, extreme low res. */
+@media (max-width: 410px) {
+  header h1 {
+    font-size: 30px;
+    line-height: 36x;
+  }
+  h2 {
+    font-size: 20px;
+    line-height: 24px;
+  }
+  #introduction {
+    padding-top: 120px;
   }
 }
