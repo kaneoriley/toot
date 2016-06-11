@@ -19,15 +19,13 @@ package me.oriley.toot;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -36,17 +34,20 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 
 public final class TootProcessor extends AbstractProcessor {
 
-    private static final String DELEGATE = "delegate";
-    private static final String TARGET_CLASS = "targetClass";
-    private static final String SUBSCRIBER = "subscriber";
-    private static final String PRODUCER = "producer";
-    private static final String SUBSCRIBERS = "subscribers";
-    private static final String PRODUCERS = "producers";
-    private static final String CREATE_SUBSCRIBERS = "createSubscribers";
-    private static final String CREATE_PRODUCERS = "createProducers";
+    private static final String GET_SUBSCRIBER = "getSubscriber";
+    private static final String GET_PRODUCER = "getProducer";
+    private static final String OBJECT = "object";
+    private static final String HOST = "host";
+    private static final String CAST_HOST = "castHost";
+    private static final String EVENT = "event";
+    private static final String EVENT_CLASS = "eventClass";
+    private static final String CLS = "cls";
 
     @NonNull
     private Filer mFiler;
+
+    @NonNull
+    private Elements mElements;
 
     @NonNull
     private Messager mMessager;
@@ -56,6 +57,7 @@ public final class TootProcessor extends AbstractProcessor {
         super.init(env);
         mFiler = env.getFiler();
         mMessager = env.getMessager();
+        mElements = env.getElementUtils();
     }
 
     @Override
@@ -81,8 +83,14 @@ public final class TootProcessor extends AbstractProcessor {
             final Map<TypeElement, EventMethodsMap> subscribeMethods = collectMethods(env, true);
             final Map<TypeElement, EventMethodsMap> produceMethods = collectMethods(env, false);
 
-            if (!subscribeMethods.isEmpty()) {
-                writeToFile(generateClass(subscribeMethods, produceMethods));
+            for (TypeElement typeElement : subscribeMethods.keySet()) {
+                String packageName = getPackageName(typeElement);
+                writeToFile(packageName, generateSubscriberFactory(typeElement, subscribeMethods.get(typeElement)));
+            }
+
+            for (TypeElement typeElement : produceMethods.keySet()) {
+                String packageName = getPackageName(typeElement);
+                writeToFile(packageName, generateProducerFactory(typeElement, produceMethods.get(typeElement)));
             }
         } catch (TootProcessorException e) {
             mMessager.printMessage(ERROR, e.getMessage());
@@ -90,6 +98,17 @@ public final class TootProcessor extends AbstractProcessor {
         }
 
         return false;
+    }
+
+    @NonNull
+    private String getPackageName(@NonNull TypeElement type) {
+        return mElements.getPackageOf(type).getQualifiedName().toString();
+    }
+
+    @NonNull
+    private String getClassName(@NonNull TypeElement type, @NonNull String packageName) {
+        int packageLen = packageName.length() + 1;
+        return type.getQualifiedName().toString().substring(packageLen).replace('.', '$');
     }
 
     @Nullable
@@ -103,95 +122,147 @@ public final class TootProcessor extends AbstractProcessor {
     }
 
     @NonNull
-    private TypeSpec generateClass(@NonNull Map<TypeElement, EventMethodsMap> subscribeMethodsInClass,
-                                   @NonNull Map<TypeElement, EventMethodsMap> produceMethodsInClass) throws TootProcessorException {
-        return TypeSpec.classBuilder(TootFinder.class.getSimpleName())
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addSuperinterface(Finder.class)
-                .addMethod(generateCreateMethod(subscribeMethodsInClass, true))
-                .addMethod(generateCreateMethod(produceMethodsInClass, false)).build();
-    }
+    private TypeSpec generateSubscriberFactory(@NonNull TypeElement typeElement,
+                                               @NonNull EventMethodsMap subscriberMethods) throws TootProcessorException {
+        // Class type
+        String packageName = getPackageName(typeElement);
+        String className = getClassName(typeElement, packageName);
 
-    @NonNull
-    private MethodSpec generateCreateMethod(@NonNull Map<TypeElement, EventMethodsMap> methodsByClass,
-                                            boolean subscribers) throws TootProcessorException {
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder(subscribers ? CREATE_SUBSCRIBERS : CREATE_PRODUCERS)
+        // Constructor
+        CodeBlock.Builder initBuilder = CodeBlock.builder()
+                .add("$T.addAll(mSubscribedClasses", Collections.class);
+        for (TypeMirror typeMirror : subscriberMethods.keySet()) {
+            initBuilder.add(", $T.class", typeMirror);
+        }
+        initBuilder.add(");\n");
+
+        MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(Object.class, DELEGATE, Modifier.FINAL)
-                .addParameter(Class.class, TARGET_CLASS, Modifier.FINAL)
-                .returns(Map.class);
-        for (Map.Entry<TypeElement, EventMethodsMap> entry : methodsByClass.entrySet()) {
-            builder.addCode(generateElement(entry.getKey(), entry.getValue(), subscribers)).addCode("\n");
+                .addCode(initBuilder.build());
+
+        // Class builder
+        TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(className + SubscriberFactory.CLASS_SUFFIX)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethod(constructor.build())
+                .superclass(SubscriberFactory.class);
+
+        // Create method
+        MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder(GET_SUBSCRIBER)
+                .addModifiers(Modifier.PROTECTED)
+                .addAnnotation(Nullable.class)
+                .addAnnotation(Override.class)
+                .addCode(generateAbstractSubscriber(typeElement, subscriberMethods))
+                .returns(Subscriber.class);
+
+        // Type parameter
+        ParameterSpec.Builder parameterSpecBuilder =
+                ParameterSpec.builder(TypeName.get(Object.class)
+                        .annotated(AnnotationSpec.builder(NonNull.class).build()), OBJECT, Modifier.FINAL);
+
+        return typeSpecBuilder.addMethod(methodSpecBuilder.addParameter(parameterSpecBuilder.build()).build()).build();
+    }
+
+    @NonNull
+    private TypeSpec generateProducerFactory(@NonNull TypeElement typeElement,
+                                             @NonNull EventMethodsMap producerMethods) throws TootProcessorException {
+        // Class type
+        String packageName = getPackageName(typeElement);
+        String className = getClassName(typeElement, packageName);
+
+        // Constructor
+        CodeBlock.Builder initBuilder = CodeBlock.builder()
+                .add("$T.addAll(mProducedClasses", Collections.class);
+        for (TypeMirror typeMirror : producerMethods.keySet()) {
+            initBuilder.add(", $T.class", typeMirror);
+        }
+        initBuilder.add(");\n");
+
+        MethodSpec.Builder constructor = MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addCode(initBuilder.build());
+
+        // Class builder
+        TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(className + ProducerFactory.CLASS_SUFFIX)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addMethod(constructor.build())
+                .superclass(ProducerFactory.class);
+
+        // Create method
+        MethodSpec.Builder methodSpecBuilder = MethodSpec.methodBuilder(GET_PRODUCER)
+                .addModifiers(Modifier.PROTECTED)
+                .addAnnotation(Nullable.class)
+                .addAnnotation(Override.class)
+                .addCode(generateAbstractProducer(typeElement, producerMethods))
+                .returns(Producer.class);
+
+        // Type parameter
+        ParameterSpec.Builder parameterSpecBuilder =
+                ParameterSpec.builder(TypeName.get(Object.class)
+                        .annotated(AnnotationSpec.builder(NonNull.class).build()), OBJECT, Modifier.FINAL);
+
+        return typeSpecBuilder.addMethod(methodSpecBuilder.addParameter(parameterSpecBuilder.build()).build()).build();
+    }
+
+    @NonNull
+    private CodeBlock generateAbstractSubscriber(@NonNull TypeElement hostType,
+                                                 @NonNull EventMethodsMap subscriberMethods) throws TootProcessorException {
+        CodeBlock.Builder builder = CodeBlock.builder()
+                .add("return new $T($N) {\n",  Subscriber.class, OBJECT)
+                .add("    @$T\n", Override.class)
+                .add("    protected void onEvent(@$T final $T $N, @$T final $T $N) {\n", NonNull.class, Object.class,
+                        HOST, NonNull.class, Event.class, EVENT)
+                .add("        $T $N = ($T) $N;\n", hostType, CAST_HOST, hostType, HOST)
+                .add("        $T $N = $N.getClass();\n", Class.class, CLS, EVENT);
+
+        boolean first = true;
+        for (Map.Entry<TypeMirror, List<ExecutableElement>> entry : subscriberMethods.entrySet()) {
+            List<ExecutableElement> methods = entry.getValue();
+            if (methods.size() != 1) {
+                throw new TootProcessorException("Invalid subscriber count [" + methods.size() + "] for eventType: " +
+                        entry.getKey().getKind().name());
+            }
+
+            ExecutableElement method = methods.get(0);
+            TypeMirror typeMirror = entry.getKey();
+            builder.add(first ? "        if (" : "        } else if (")
+                    .add("$N.equals($T.class)) {\n", CLS, typeMirror)
+                    .add("            $N.$N(($T) event);\n", CAST_HOST, method.getSimpleName(), typeMirror);
+            first = false;
         }
 
-        builder.addStatement("// Fall through if nothing found");
-        builder.addStatement("return $T.emptyMap()", Collections.class);
-        return builder.build();
+        return builder.add("        }\n").add("    }\n").add("};\n").build();
     }
 
     @NonNull
-    private CodeBlock generateElement(@NonNull TypeElement type,
-                                      @NonNull EventMethodsMap eventMethodsMap,
-                                      boolean subscriber) throws TootProcessorException {
-        final CodeBlock.Builder builder = CodeBlock.builder()
-                .beginControlFlow("if ($N.equals($T.class))", TARGET_CLASS, type);
+    private CodeBlock generateAbstractProducer(@NonNull TypeElement hostType,
+                                               @NonNull EventMethodsMap producerMethods) throws TootProcessorException {
+        CodeBlock.Builder builder = CodeBlock.builder()
+                .add("return new $T($N) {\n",  Producer.class, OBJECT)
+                .add("    @$T\n", Override.class)
+                .add("    @$T\n", NonNull.class)
+                .add("    protected <E extends $T> E produceEvent(@$T final $T $N, @$T final $T<E> $N) {\n", Event.class,
+                        NonNull.class, Object.class, HOST, NonNull.class, Class.class, EVENT_CLASS)
+                .add("        $T $N = ($T) $N;\n", hostType, CAST_HOST, hostType, HOST);
 
-        String local = subscriber ? SUBSCRIBERS : PRODUCERS;
-        Class c = subscriber ? Subscriber.class : Producer.class;
+        boolean first = true;
+        for (Map.Entry<TypeMirror, List<ExecutableElement>> entry : producerMethods.entrySet()) {
+            List<ExecutableElement> methods = entry.getValue();
+            if (methods.size() != 1) {
+                throw new TootProcessorException("Invalid producer count [" + methods.size() + "] for eventType: " +
+                        entry.getKey().getKind().name());
+            }
 
-        builder.addStatement("final $T<$T<?>, $T> $N = new $T<$T<?>, $T>($L)",
-                Map.class, Class.class, c, local, HashMap.class, Class.class, c, eventMethodsMap.size());
-
-        for (Map.Entry<TypeMirror, List<ExecutableElement>> entry : eventMethodsMap.entrySet()) {
-            final TypeMirror eventType = entry.getKey();
-            final List<ExecutableElement> methods = entry.getValue();
-            builder.addStatement("$N.put($T.class, $L)", local, eventType, generateHolder(type, eventType, methods, subscriber));
+            ExecutableElement method = methods.get(0);
+            TypeMirror typeMirror = entry.getKey();
+            builder.add(first ? "        if (" : "        } else if (")
+                    .add("$N.equals($T.class)) {\n", EVENT_CLASS, typeMirror)
+                    .add("            return (E) $N.$N();\n", CAST_HOST, method.getSimpleName());
+            first = false;
         }
+        builder.add("        } else {\n")
+                .add("            return null;\n");
 
-        builder.addStatement("return $N", local).endControlFlow();
-        return builder.build();
-    }
-
-    @NonNull
-    private CodeBlock generateHolder(@NonNull TypeElement type,
-                                          @NonNull TypeMirror eventType,
-                                          @NonNull List<ExecutableElement> methods,
-                                          boolean subscriber) throws TootProcessorException {
-        String local = subscriber ? SUBSCRIBER : PRODUCER;
-
-        if (methods.size() != 1) {
-            throw new TootProcessorException("Invalid " + local + " count [" + methods.size() + "] for eventType: " +
-                    eventType.getKind().name());
-        } else {
-            return CodeBlock.builder().add("$L", subscriber ? generateSubscriber(type, eventType, methods.get(0)) :
-                    generateProducer(type, eventType, methods.get(0))).build();
-        }
-    }
-
-    @NonNull
-    private CodeBlock generateSubscriber(@NonNull TypeElement type,
-                                         @NonNull TypeMirror eventType,
-                                         @NonNull ExecutableElement method) {
-        return CodeBlock.builder()
-                .add("\nnew $T<$T>($N) {",  Subscriber.class, eventType, DELEGATE)
-                .add("\n    public void onEvent($T event) {", eventType)
-                .add("\n        (($T) $N).$N(($T) event);", type, DELEGATE, method.getSimpleName(), eventType)
-                .add("\n    }")
-                .add("\n}")
-                .build();
-    }
-
-    @NonNull
-    private CodeBlock generateProducer(@NonNull TypeElement type,
-                                       @NonNull TypeMirror eventType,
-                                       @NonNull ExecutableElement method) {
-        return CodeBlock.builder()
-                .add("\nnew $T<$T>($N) {",  Producer.class, eventType, DELEGATE)
-                .add("\n    public $T produceEvent() {", eventType)
-                .add("\n        return (($T) $N).$N();", type, DELEGATE, method.getSimpleName())
-                .add("\n    }")
-                .add("\n}")
-                .build();
+        return builder.add("        }\n").add("    }\n").add("};\n").build();
     }
 
     @NonNull
@@ -207,9 +278,10 @@ public final class TootProcessor extends AbstractProcessor {
             }
 
             final ExecutableElement method = (ExecutableElement) e;
+            String methodName = method.getSimpleName().toString();
             // methods must be public as generated code will call it directly
             if (!method.getModifiers().contains(Modifier.PUBLIC)) {
-                throw new TootProcessorException("Method is not public: " + method.getSimpleName());
+                throw new TootProcessorException("Method is not public: " + methodName);
             }
 
             final List<? extends VariableElement> parameters = method.getParameters();
@@ -218,29 +290,29 @@ public final class TootProcessor extends AbstractProcessor {
             if (subscribers) {
                 // there must be only one parameter
                 if (parameters == null || parameters.size() == 0) {
-                    throw new TootProcessorException("Too few arguments in: " + method.getSimpleName());
+                    throw new TootProcessorException("Too few arguments in: " + methodName);
                 } else if (parameters.size() > 1) {
-                    throw new TootProcessorException("Too many arguments in: " + method.getSimpleName());
+                    throw new TootProcessorException("Too many arguments in: " + methodName);
                 }
             } else {
                 // there must be no parameters
                 if (parameters != null && parameters.size() > 0) {
-                    throw new TootProcessorException("Producer method cannot have parameters: " + method.getSimpleName());
+                    throw new TootProcessorException("Producer method cannot have parameters: " + methodName);
                 } else if (returnType == null) {
-                    throw new TootProcessorException("Producer method must return an event: " + method.getSimpleName());
+                    throw new TootProcessorException("Producer method must return an event: " + methodName);
                 }
             }
 
             // method shouldn't throw exceptions
             final List<? extends TypeMirror> exceptions = method.getThrownTypes();
             if (exceptions != null && exceptions.size() > 0) {
-                throw new TootProcessorException("Method shouldn't throw exceptions: " + method.getSimpleName());
+                throw new TootProcessorException("Method shouldn't throw exceptions: " + methodName);
             }
 
             final TypeElement type = findEnclosingElement(e);
             // class should exist
             if (type == null) {
-                throw new TootProcessorException("Could not find a class for " + method.getSimpleName());
+                throw new TootProcessorException("Could not find a class for " + methodName);
             }
             // and it should be public
             if (!type.getModifiers().contains(Modifier.PUBLIC)) {
@@ -276,8 +348,8 @@ public final class TootProcessor extends AbstractProcessor {
     }
 
     @NonNull
-    private JavaFile writeToFile(@NonNull TypeSpec spec) throws TootProcessorException {
-        final JavaFile file = JavaFile.builder(TootFinder.class.getPackage().getName(), spec).indent("    ").build();
+    private JavaFile writeToFile(@NonNull String packageName, @NonNull TypeSpec spec) throws TootProcessorException {
+        final JavaFile file = JavaFile.builder(packageName, spec).indent("    ").build();
         try {
             file.writeTo(mFiler);
         } catch (IOException e) {

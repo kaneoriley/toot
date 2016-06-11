@@ -19,5 +19,4 @@ sourceCompatibility = JavaVersion.VERSION_1_7
 
 dependencies {
     compile project(':toot-core')
-    compileOnly project(':toot-dummy')
 }

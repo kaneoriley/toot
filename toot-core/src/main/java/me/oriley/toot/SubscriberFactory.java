@@ -18,21 +18,21 @@ package me.oriley.toot;
 
 import android.support.annotation.NonNull;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
-@SuppressWarnings("unused")
-public final class TootFinder implements Finder {
+@SuppressWarnings("WeakerAccess")
+public abstract class SubscriberFactory {
+
+    static final String CLASS_SUFFIX = "$$SubscriberFactory";
 
     @NonNull
-    @Override
-    public Map<Class<?>, Producer> createProducers(@NonNull Object listener, @NonNull Class<?> targetClass) {
-        return Collections.emptyMap();
+    protected final List<Class<? extends Event>> mSubscribedClasses = new ArrayList<>();
+
+    @NonNull
+    final List<Class<? extends Event>> getSubscribedClasses() {
+        return mSubscribedClasses;
     }
 
     @NonNull
-    @Override
-    public Map<Class<?>, Subscriber> createSubscribers(@NonNull Object listener, @NonNull Class<?> targetClass) {
-        return Collections.emptyMap();
-    }
+    protected abstract Subscriber getSubscriber(@NonNull final Object host);
 }
