@@ -265,6 +265,11 @@ public final class TootProcessor extends AbstractProcessor {
         return builder.add("        }\n").add("    }\n").add("};\n").build();
     }
 
+    private boolean isPackageProtectedVisible(@NonNull Element element) {
+        Set<Modifier> modifiers = element.getModifiers();
+        return !modifiers.contains(Modifier.PROTECTED) && !modifiers.contains(Modifier.PRIVATE);
+    }
+
     @NonNull
     private Map<TypeElement, EventMethodsMap> collectMethods(@NonNull RoundEnvironment env,
                                                              boolean subscribers) throws TootProcessorException {
@@ -280,8 +285,8 @@ public final class TootProcessor extends AbstractProcessor {
             final ExecutableElement method = (ExecutableElement) e;
             String methodName = method.getSimpleName().toString();
             // methods must be public as generated code will call it directly
-            if (!method.getModifiers().contains(Modifier.PUBLIC)) {
-                throw new TootProcessorException("Method is not public: " + methodName);
+            if (!isPackageProtectedVisible(method)) {
+                throw new TootProcessorException("Method must be at least package visible: " + methodName);
             }
 
             final List<? extends VariableElement> parameters = method.getParameters();
@@ -315,14 +320,14 @@ public final class TootProcessor extends AbstractProcessor {
                 throw new TootProcessorException("Could not find a class for " + methodName);
             }
             // and it should be public
-            if (!type.getModifiers().contains(Modifier.PUBLIC)) {
-                throw new TootProcessorException("Class is not public: " + type);
+            if (!isPackageProtectedVisible(type)) {
+                throw new TootProcessorException("Class is not package visible: " + type);
             }
             // as well as all parent classes
             TypeElement parentType = findEnclosingElement(type);
             while (parentType != null) {
-                if (!parentType.getModifiers().contains(Modifier.PUBLIC)) {
-                    throw new TootProcessorException("Class is not public: " + parentType);
+                if (!isPackageProtectedVisible(parentType)) {
+                    throw new TootProcessorException("Class is not package visible: " + parentType);
                 }
                 parentType = findEnclosingElement(parentType);
             }
