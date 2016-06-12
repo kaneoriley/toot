@@ -72,12 +72,12 @@
           <pre class="prettyprint">Bus bus = new Bus();</pre>
         </div>
         <p>Because a bus is only effective if it is shared, we recommend obtaining the instance through injection or
-        another appropriate mechanism.</p>
+          another appropriate mechanism.</p>
 
         <h4>Publishing</h4>
         <p>Event publishing is the most important part of the bus as it allows you to tell subscribers that an
           action has occurred. An instance of any class that extends <code>Event</code> may be published on the bus
-          and it will only be dispatched to subscribers for that type.</p>
+          and it will only be dispatched to subscribers for that type. The class must be at least package visibility.</p>
         <p>To publish a new event, call the <code>post</code> method:</p>
         <div class="codeblock">
           <pre class="prettyprint">bus.post(new AnswerAvailableEvent(42));</pre>
@@ -91,12 +91,12 @@
           take only a single parameter, the type of which will be the event you wish to subscribe to.</p>
         <p>To listen for the event published in the previous section we would need the following:</p>
         <div class="codeblock"><pre class="prettyprint">@Subscribe
-public void onAnswerAvailable(AnswerAvailableEvent event) {
+void onAnswerAvailable(AnswerAvailableEvent event) {
     // TODO: React to the event somehow!
 }</pre>
         </div>
-        <p>The name of the method can be anything you like. The annotation, single argument, and public accessor
-          are all that is required.</p>
+        <p>The name of the method can be anything you like. The annotation, single argument, and at least package
+          visible accessor are all that is required.</p>
         <p>In order to receive events, a class instance needs to register with the bus. If <code>this</code> refers
           to an instance of the class in which the previous method was present, we can register using the
           following:</p>
@@ -123,7 +123,7 @@ public void onAnswerAvailable(AnswerAvailableEvent event) {
           keeping track of the last answer event somewhere from above we can register to produce its initial
           value:</p>
         <div class="codeblock"><pre class="prettyprint">@Produce
-public AnswerAvailableEvent produceAnswerAvailable() {
+AnswerAvailableEvent produceAnswerAvailable() {
     // Assuming 'lastAnswer' exists.
     return new AnswerAvailableEvent(this.lastAnswer);
 }</pre>
