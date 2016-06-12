@@ -210,7 +210,7 @@ public final class TootProcessor extends AbstractProcessor {
                 .add("return new $T($N) {\n",  Subscriber.class, OBJECT)
                 .add("    @$T\n", Override.class)
                 .add("    protected void onEvent(@$T final $T $N, @$T final $T $N) {\n", NonNull.class, Object.class,
-                        HOST, NonNull.class, Event.class, EVENT)
+                        HOST, NonNull.class, Object.class, EVENT)
                 .add("        $T $N = ($T) $N;\n", hostType, CAST_HOST, hostType, HOST)
                 .add("        $T $N = $N.getClass();\n", Class.class, CLS, EVENT);
 
@@ -239,8 +239,8 @@ public final class TootProcessor extends AbstractProcessor {
         CodeBlock.Builder builder = CodeBlock.builder()
                 .add("return new $T($N) {\n",  Producer.class, OBJECT)
                 .add("    @$T\n", Override.class)
-                .add("    @$T\n", NonNull.class)
-                .add("    protected <E extends $T> E produceEvent(@$T final $T $N, @$T final $T<E> $N) {\n", Event.class,
+                .add("    @$T\n", Nullable.class)
+                .add("    protected <E> E produceEvent(@$T final $T $N, @$T final $T<E> $N) {\n",
                         NonNull.class, Object.class, HOST, NonNull.class, Class.class, EVENT_CLASS)
                 .add("        $T $N = ($T) $N;\n", hostType, CAST_HOST, hostType, HOST);
 

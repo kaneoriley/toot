@@ -113,8 +113,8 @@ public class Bus {
         }
 
         if (producerFactory != null) {
-            List<Class<? extends Event>> producerClasses = producerFactory.getProducedClasses();
-            for (Class<? extends Event> type : producerClasses) {
+            List<Class<?>> producerClasses = producerFactory.getProducedClasses();
+            for (Class<?> type : producerClasses) {
 
                 final Producer producer = producerFactory.getProducer(object);
                 Producer previousProducer = mProducers.putIfAbsent(type, producer);
@@ -135,7 +135,7 @@ public class Bus {
 
         if (subscriberFactory != null) {
             Subscriber subscriber = null;
-            List<Class<? extends Event>> subscriberClasses = subscriberFactory.getSubscribedClasses();
+            List<Class<?>> subscriberClasses = subscriberFactory.getSubscribedClasses();
             for (Class<?> type : subscriberClasses) {
                 Set<Subscriber> subscribers = mSubscribers.get(type);
                 if (subscribers == null) {
@@ -156,7 +156,7 @@ public class Bus {
                 }
             }
 
-            for (Class<? extends Event> type : subscriberClasses) {
+            for (Class<?> type : subscriberClasses) {
                 Producer producer = mProducers.get(type);
                 if (producer != null && producer.isValid() && subscriber != null) {
                     if (!producer.isValid()) {
@@ -194,8 +194,8 @@ public class Bus {
         }
 
         if (producerFactory != null) {
-            List<Class<? extends Event>> producerClasses = producerFactory.getProducedClasses();
-            for (Class<? extends Event> cls : producerClasses) {
+            List<Class<?>> producerClasses = producerFactory.getProducedClasses();
+            for (Class<?> cls : producerClasses) {
                 Producer producer = mProducers.get(cls);
 
                 if (producer == null) {
@@ -209,8 +209,8 @@ public class Bus {
         }
 
         if (subscriberFactory != null) {
-            List<Class<? extends Event>> subscriberClasses = subscriberFactory.getSubscribedClasses();
-            for (Class<? extends Event> type : subscriberClasses) {
+            List<Class<?>> subscriberClasses = subscriberFactory.getSubscribedClasses();
+            for (Class<?> type : subscriberClasses) {
                 boolean removed = false;
                 Set<Subscriber> currentSubscribers = mSubscribers.get(type);
                 for (Subscriber subscriber : currentSubscribers) {
@@ -230,7 +230,7 @@ public class Bus {
     }
 
     @SuppressWarnings("unused")
-    public <E extends Event> void post(@NonNull E event) {
+    public <E> void post(@NonNull E event) {
         mEnforcer.enforce(this);
 
         Set<Class<?>> dispatchTypes = flattenHierarchy(event.getClass());
@@ -302,7 +302,7 @@ public class Bus {
         return factory;
     }
 
-    private <T extends Event> void enqueueEvent(@NonNull T event, @NonNull Subscriber subscriber) {
+    private <E> void enqueueEvent(@NonNull E event, @NonNull Subscriber subscriber) {
         mDispatchQueue.get().offer(new DispatchInfo<>(event, subscriber));
     }
 
@@ -328,7 +328,7 @@ public class Bus {
         }
     }
 
-    private <E extends Event> void dispatchProducedEvent(@NonNull Subscriber subscriber,
+    private <E> void dispatchProducedEvent(@NonNull Subscriber subscriber,
                                                          @NonNull Producer producer,
                                                          @NonNull Class<E> eventClass) {
         if (producer.isValid()) {
@@ -343,7 +343,7 @@ public class Bus {
         }
     }
 
-    private <E extends Event> void dispatch(@NonNull E event, @NonNull Subscriber subscriber) {
+    private <E> void dispatch(@NonNull E event, @NonNull Subscriber subscriber) {
         if (subscriber.isValid()) {
             subscriber.dispatchEvent(event);
         } else {
@@ -399,7 +399,7 @@ public class Bus {
         return "[Bus \"" + mTag + "\"]";
     }
 
-    static class DispatchInfo<E extends Event> {
+    static class DispatchInfo<E> {
 
         @NonNull
         final E event;

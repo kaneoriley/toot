@@ -26,10 +26,10 @@ public abstract class ProducerFactory {
     static final String CLASS_SUFFIX = "$$ProducerFactory";
 
     @NonNull
-    protected final List<Class<? extends Event>> mProducedClasses = new ArrayList<>();
+    protected final List<Class<?>> mProducedClasses = new ArrayList<>();
 
     @NonNull
-    final List<Class<? extends Event>> getProducedClasses() {
+    final List<Class<?>> getProducedClasses() {
         return mProducedClasses;
     }
 

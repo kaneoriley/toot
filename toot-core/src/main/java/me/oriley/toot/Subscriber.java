@@ -33,14 +33,14 @@ public abstract class Subscriber {
         this.host = new WeakReference<>(host);
     }
 
-    void dispatchEvent(@NonNull Event event) {
+    void dispatchEvent(@NonNull Object event) {
         Object object = host.get();
         if (object != null) {
             onEvent(object, event);
         }
     }
 
-    protected abstract void onEvent(@NonNull Object host, @NonNull final Event event);
+    protected abstract void onEvent(@NonNull Object host, @NonNull final Object event);
 
     boolean isValid() {
         return mValid && host.get() != null;

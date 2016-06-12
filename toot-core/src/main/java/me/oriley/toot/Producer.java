@@ -35,7 +35,7 @@ public abstract class Producer {
     }
 
     @Nullable
-    <E extends Event> E dispatchProduceEvent(@NonNull Class<E> eventClass) {
+    <E> E dispatchProduceEvent(@NonNull Class<E> eventClass) {
         Object object = host.get();
         if (object != null) {
             return produceEvent(object, eventClass);
@@ -44,7 +44,7 @@ public abstract class Producer {
         }
     }
 
-    protected abstract <E extends Event> E produceEvent(@NonNull final Object host, @NonNull final Class<E> eventClass);
+    protected abstract <E> E produceEvent(@NonNull final Object host, @NonNull final Class<E> eventClass);
 
     boolean isValid() {
         return mValid && host.get() != null;
