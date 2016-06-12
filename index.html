@@ -1,148 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Toot</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Fully code generated event bus for Java/Android, based on Otto">
-    <link href="static/bootstrap-combined.min.css" rel="stylesheet">
-    <link href="static/app.css" rel="stylesheet">
-    <link href="static/app-theme.css" rel="stylesheet">
-    <link href="http://fonts.googleapis.com/css?family=Roboto:600,400,300italic,100,100italic,300" rel="stylesheet" type="text/css">
-    <!--[if lt IE 9]><script src="static/html5shiv.min.js"></script><![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Toot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Fully code generated event bus for Java/Android, based on Otto">
+  <link href="static/bootstrap-combined.min.css" rel="stylesheet">
+  <link href="static/app.css" rel="stylesheet">
+  <link href="static/app-theme.css" rel="stylesheet">
+  <link href="http://fonts.googleapis.com/css?family=Roboto:600,400,300italic,100,100italic,300" rel="stylesheet"
+        type="text/css">
+  <!--[if lt IE 9]>
+  <script src="static/html5shiv.min.js"></script><![endif]-->
 
-    <link rel="icon" type="image/png" href="favicon/favicon-16x16.png" sizes="16x16">
-    <link rel="icon" type="image/png" href="favicon/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/png" href="favicon/favicon-192x192.png" sizes="192x192">
-    <meta name="theme-color" content="#ff5722">
+  <link rel="icon" type="image/png" href="favicon/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="favicon/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="favicon/favicon-192x192.png" sizes="192x192">
+  <meta name="theme-color" content="#ff5722">
 
-  </head>
-  <body data-target=".content-nav">
-    <header>
-      <div class="container">
-        <div class="row">
-          <div class="span5">
-            <h1>Toot</h1>
-          </div>
-          <div class="span7">
-            <menu>
-              <ul>
-                <li><a href="#download" data-title="Get Latest Version" class="menu github"><img src="static/icon-download.png" alt="Get Latest Version"/></a></li>
-                <li><a href="http://github.com/oriley-me/toot" data-title="View GitHub Project" class="menu github"><img src="static/icon-github.png" alt="GitHub"/></a></li>
-                <li><a href="http://oriley.me" target="_blank" data-title="O'Riley ME" class="menu oriley"><img src="static/icon-oriley.png" alt="O'Riley ME"/></a></li>
-              </ul>
-            </menu>
-          </div>
+</head>
+<body data-target=".content-nav">
+<header>
+  <div class="container">
+    <div class="row">
+      <div class="span5">
+        <h1>Toot</h1>
       </div>
-    </header>
-    <section id="subtitle">
-      <div class="container">
-        <div class="row">
-          <div class="span12">
-            <h2>Fully code generated <strong>event bus</strong> for Java/Android, based on Otto</h2>
-          </div>
+      <div class="span7">
+        <menu>
+          <ul>
+            <li><a href="#download" data-title="Get Latest Version" class="menu github"><img
+                    src="static/icon-download.png" alt="Get Latest Version"/></a></li>
+            <li><a href="http://github.com/oriley-me/toot" data-title="View GitHub Project" class="menu github"><img
+                    src="static/icon-github.png" alt="GitHub"/></a></li>
+            <li><a href="http://oriley.me" target="_blank" data-title="O'Riley ME" class="menu oriley"><img
+                    src="static/icon-oriley.png" alt="O'Riley ME"/></a></li>
+          </ul>
+        </menu>
+      </div>
+    </div>
+  </div>
+</header>
+<section id="subtitle">
+  <div class="container">
+    <div class="row">
+      <div class="span12">
+        <h2>Fully code generated <strong>event bus</strong> for Java/Android, based on Otto</h2>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="body">
+  <div class="container">
+    <div class="row">
+      <div class="span9">
+        <h3 id="introduction">Introduction</h3>
+        <p>Toot is an event bus designed to decouple different parts of your application while still allowing them
+          to communicate efficiently.</p>
+
+        <p>Forked from <a href="http://square.github.io/otto/" target="_blank">Otto</a> (which in turn forked from
+          <a href="https://github.com/google/guava" target="_blank">Guava</a>), Toot adds the speed of using compile
+          time code generation, rather than using reflection like the predecessors. On top of that, Toot supports
+          subscribers in super classes, and doesn't throw an exception if you try to unregister a class which is not
+          registered (optional, but defaults to off).</p>
+
+        <h3 id="usage">Usage</h3>
+        <p>Toot is designed with Android-specific use cases (although it can be used in Java only projects as well)
+          in mind and is intended for use as a singleton (optional). Create an instance of an event bus with</p>
+        <div class="codeblock">
+          <pre class="prettyprint">Bus bus = new Bus();</pre>
         </div>
-      </div>
-    </section>
-    <section id="body">
-      <div class="container">
-        <div class="row">
-          <div class="span9">
-            <h3 id="introduction">Introduction</h3>
-            <p>Toot is an event bus designed to decouple different parts of your application while still allowing them
-            to communicate efficiently.</p>
+        <p>Because a bus is only effective if it is shared, we recommend obtaining the instance through injection or
+        another appropriate mechanism.</p>
 
-            <p>Forked from <a href="http://square.github.io/otto/" target="_blank">Otto</a> (which in turn forked from
-            <a href="https://github.com/google/guava" target="_blank">Guava</a>), Toot adds the speed of using compile
-            time code generation, rather than using reflection like the predecessors. On top of that, Toot supports
-            subscribers in super classes, and doesn't throw an exception if you try to unregister a class which is not
-            registered (optional, but defaults to off).</p>
+        <h4>Publishing</h4>
+        <p>Event publishing is the most important part of the bus as it allows you to tell subscribers that an
+          action has occurred. An instance of any class that extends <code>Event</code> may be published on the bus
+          and it will only be dispatched to subscribers for that type.</p>
+        <p>To publish a new event, call the <code>post</code> method:</p>
+        <div class="codeblock">
+          <pre class="prettyprint">bus.post(new AnswerAvailableEvent(42));</pre>
+        </div>
+        <p>Posting to the bus is a synchronous action so when program execution continues it is guaranteed that all
+          subscribers have been called.</p>
 
-            <h3 id="usage">Usage</h3>
-            <p>Toot is designed with Android-specific use cases (although it can be used in Java only projects as well)
-            in mind and is intended for use as a singleton (optional). Create an instance of an event bus with
-            <div class="codeblock"><pre class="prettyprint">Bus bus = new Bus();</pre></div>
-            Because a bus is only effective if it is shared, we recommend obtaining the instance through injection or
-            another appropriate mechanism.</p>
-
-            <h4>Publishing</h4>
-            <p>Event publishing is the most important part of the bus as it allows you to tell subscribers that an
-            action has occurred. An instance of any class that extends <code>Event</code> may be published on the bus
-            and it will only be dispatched to subscribers for that type.</p>
-            <p>To publish a new event, call the <code>post</code> method:</p>
-            <div class="codeblock"><pre class="prettyprint">bus.post(new AnswerAvailableEvent(42));</pre></div>
-            <p>Posting to the bus is a synchronous action so when program execution continues it is guaranteed that all
-            subscribers have been called.</p>
-
-            <h4>Subscribing</h4>
-            <p>Subscription is the complement to event publishing&mdash;it lets you receive notification that an event
-            has occurred. To subscribe to an event, annotate a method with <code>@Subscribe</code>. The method should
-            take only a single parameter, the type of which will be the event you wish to subscribe to.</p>
-            <p>To listen for the event published in the previous section we would need the following:</p>
-            <div class="codeblock"><pre class="prettyprint">@Subscribe
+        <h4>Subscribing</h4>
+        <p>Subscription is the complement to event publishing&mdash;it lets you receive notification that an event
+          has occurred. To subscribe to an event, annotate a method with <code>@Subscribe</code>. The method should
+          take only a single parameter, the type of which will be the event you wish to subscribe to.</p>
+        <p>To listen for the event published in the previous section we would need the following:</p>
+        <div class="codeblock"><pre class="prettyprint">@Subscribe
 public void onAnswerAvailable(AnswerAvailableEvent event) {
     // TODO: React to the event somehow!
-}</pre></div>
-            <p>The name of the method can be anything you like. The annotation, single argument, and public accessor
-            are all that is required.</p>
-            <p>In order to receive events, a class instance needs to register with the bus. If <code>this</code> refers
-            to an instance of the class in which the previous method was present, we can register using the
-            following:</p>
-            <div class="codeblock"><pre class="prettyprint">bus.register(this);</pre></div>
-            <p>Registering will find methods on the current class type, as well as all super types. In the case that a
-            parent class and subclass both wish to react to the same event, you must name the subscription methods
-            differently, otherwise the method in the subclass will be called twice. This is an inherent Java limitation.
-            If you wish to prevent this from happening, consider marking the method in the parent class as <code>final</code>
-            to ensure it can't accidentally be overridden</p>
+}</pre>
+        </div>
+        <p>The name of the method can be anything you like. The annotation, single argument, and public accessor
+          are all that is required.</p>
+        <p>In order to receive events, a class instance needs to register with the bus. If <code>this</code> refers
+          to an instance of the class in which the previous method was present, we can register using the
+          following:</p>
+        <div class="codeblock">
+          <pre class="prettyprint">bus.register(this);</pre>
+        </div>
+        <p>Registering will find methods on the current class type, as well as all super types. In the case that a
+          parent class and subclass both wish to react to the same event, you must name the subscription methods
+          differently, otherwise the method in the subclass will be called twice. This is an inherent Java limitation.
+          If you wish to prevent this from happening, consider marking the method in the parent class as
+          <code>final</code>
+          to ensure it can't accidentally be overridden</p>
 
-            <p>Remember to also call the <code>unregister</code> method when appropriate. This would usually be in the
-            opposing lifecycle callback. So for an <code>Activity</code> or <code>Fragment</code>, if you register in
-            <code>onResume</code>, you should unregister in <code>onPause</code></p>
+        <p>Remember to also call the <code>unregister</code> method when appropriate. This would usually be in the
+          opposing lifecycle callback. So for an <code>Activity</code> or <code>Fragment</code>, if you register in
+          <code>onResume</code>, you should unregister in <code>onPause</code></p>
 
-            <h4>Producing</h4>
-            <p>When subscribing to events it is often desired to also fetch the current known value for specific events
-            (e.g., current location, active user, etc.). To address this common paradigm, Otto added the concept of
-            'Producers' which provide an immediate callback to any subscribers upon their registration.</p>
-            <p>To create a producer, annotate a method with <code>@Produce</code>. The method should take no parameters
-            and its return type will be used as the type of event for which it can produce initial values. If we are
-            keeping track of the last answer event somewhere from above we can register to produce its initial
-            value:</p>
-            <div class="codeblock"><pre class="prettyprint">@Produce
+        <h4>Producing</h4>
+        <p>When subscribing to events it is often desired to also fetch the current known value for specific events
+          (e.g., current location, active user, etc.). To address this common paradigm, Otto added the concept of
+          'Producers' which provide an immediate callback to any subscribers upon their registration.</p>
+        <p>To create a producer, annotate a method with <code>@Produce</code>. The method should take no parameters
+          and its return type will be used as the type of event for which it can produce initial values. If we are
+          keeping track of the last answer event somewhere from above we can register to produce its initial
+          value:</p>
+        <div class="codeblock"><pre class="prettyprint">@Produce
 public AnswerAvailableEvent produceAnswerAvailable() {
     // Assuming 'lastAnswer' exists.
     return new AnswerAvailableEvent(this.lastAnswer);
-}</pre></div>
-            <p>Producers, like subscribers, must also be registered:</p>
-            <div class="codeblock"><pre class="prettyprint">bus.register(this);</pre></div>
-            <p>When registering, the producer method will be called once for each subscriber previously registered for
-            the same type. The producer method will also be called once for each new method that subscribes to an event
-            of the same type.</p>
-            <p>You may only have one producer per event type registered at a time on a bus.</p>
+}</pre>
+        </div>
+        <p>Producers, like subscribers, must also be registered:</p>
+        <div class="codeblock">
+          <pre class="prettyprint">bus.register(this);</pre>
+        </div>
+        <p>When registering, the producer method will be called once for each subscriber previously registered for
+          the same type. The producer method will also be called once for each new method that subscribes to an event
+          of the same type.</p>
+        <p>You may only have one producer per event type registered at a time on a bus.</p>
 
-            <h4>Thread Enforcement</h4>
-            <p>Since at times it may be ambiguous on which thread you are receiving callbacks, Toot provides an
-            enforcement mechanism to ensure you are always called on the thread you desire. By default, all interaction
-            is allowed to occur on any thread.</p>
-            <div class="codeblock"><pre class="prettyprint">// Both of these are functionally equivalent.
+        <h4>Thread Enforcement</h4>
+        <p>Since at times it may be ambiguous on which thread you are receiving callbacks, Toot provides an
+          enforcement mechanism to ensure you are always called on the thread you desire. By default, all interaction
+          is allowed to occur on any thread.</p>
+        <div class="codeblock"><pre class="prettyprint">// Both of these are functionally equivalent.
 Bus bus1 = new Bus();
-Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre></div>
+Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
+        </div>
 
-            <p>If you wish to confine operations to the main thread, you must use the <code>toot-android</code> dependency,
-            and instantiate the bus with a <code>UiThreadEnforcer</code>. The included <code>UiBus</code> class takes care
-            of this for you. You can also provide your own implementation of the <code>ThreadEnforcer</code> interface if
-            you need additional functionality or validation.</p>
+        <p>If you wish to confine operations to the main thread, you must use the <code>toot-android</code> dependency,
+          and instantiate the bus with a <code>UiThreadEnforcer</code>. The included <code>UiBus</code> class takes care
+          of this for you. You can also provide your own implementation of the <code>ThreadEnforcer</code> interface if
+          you need additional functionality or validation.</p>
 
-            <h3 id="download">Dependency Setup&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://jitpack.io/#com.github.oriley-me/toot" target="_blank"><img src="https://jitpack.io/v/com.github.oriley-me/toot.svg" alt="JitPack"></a></h3>
-            <p>The source code to Toot, and this website is <a href="http://github.com/oriley-me/toot">available on GitHub</a>.</p>
+        <h3 id="download">Dependency Setup&nbsp;&nbsp;&nbsp;&nbsp;<a
+                href="https://jitpack.io/#com.github.oriley-me/toot" target="_blank"><img
+                src="https://jitpack.io/v/com.github.oriley-me/toot.svg" alt="JitPack"></a></h3>
+        <p>The source code to Toot, and this website is <a href="http://github.com/oriley-me/toot">available on
+          GitHub</a>.</p>
 
-            <h4 id="download">Add JitPack.io to your projects repositories list</h4>
-            <div class="codeblock"><pre class="prettyprint">repositories {
+        <h4>Add JitPack.io to your projects repositories list</h4>
+        <div class="codeblock"><pre class="prettyprint">repositories {
     maven { url "https://jitpack.io" }
-}</pre></div>
+}</pre>
+        </div>
 
-            <h4 id="download">Add the required dependencies to your app module</h4>
-            <div class="codeblock"><pre class="prettyprint">dependencies {
+        <h4>Add the required dependencies to your app module</h4>
+        <div class="codeblock"><pre class="prettyprint">dependencies {
     // Required
     provided 'com.github.oriley-me.toot:toot-annotations:x.y.z'
     apt 'com.github.oriley-me.toot:toot-processor:x.y.z'
@@ -152,17 +174,18 @@ Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre></div>
 
     // Use this if you want to handle threading yourself, or use Toot on a non Android project
     compile 'com.github.oriley-me.toot:toot-runtime:x.y.z'
-}</pre></div>
+}</pre>
+        </div>
 
-            <p>Replace all version numbers <strong>x.y.z</strong> with the value shown in the JitPack badge shown above.</p>
+        <p>Replace all version numbers <strong>x.y.z</strong> with the value shown in the JitPack badge shown above.</p>
 
-            <p>If you would like to check out the latest development version, please substitute all versions for
-            <strong>develop-SNAPSHOT</strong>. Keep in mind that it is very likely things could break or be unfinished,
-            so stick the official releases if you want things to be more predictable.</p>
+        <p>If you would like to check out the latest development version, please substitute all versions for
+          <strong>develop-SNAPSHOT</strong>. Keep in mind that it is very likely things could break or be unfinished,
+          so stick the official releases if you want things to be more predictable.</p>
 
-            <h3 id="license">License</h3>
+        <h3 id="license">License</h3>
 
-            <div class="codeblock"><pre>Copyright 2016 Kane O'Riley
+        <div class="codeblock"><pre>Copyright 2016 Kane O'Riley
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -174,53 +197,54 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
-limitations under the License.</pre></div>
-
-          </div>
-          <div class="span3">
-            <div class="content-nav" data-spy="affix" data-offset-top="80">
-              <ul class="nav nav-tabs nav-stacked primary">
-                <li><a href="#introduction">Introduction</a></li>
-                <li><a href="#usage">Usage</a></li>
-                <li><a href="#download">Dependency Setup</a></li>
-                <li><a href="#license">License</a></li>
-              </ul>
-            </div>
-          </div>
+limitations under the License.</pre>
         </div>
-        <div class="row">
-          <div class="span12 logo">
-            <a href="http://oriley.me"><img src="static/logo-oriley.png" alt="O'Riley ME"/></a>
-          </div>
+
+      </div>
+      <div class="span3">
+        <div class="content-nav" data-spy="affix" data-offset-top="80">
+          <ul class="nav nav-tabs nav-stacked primary">
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#usage">Usage</a></li>
+            <li><a href="#download">Dependency Setup</a></li>
+            <li><a href="#license">License</a></li>
+          </ul>
         </div>
       </div>
-    </section>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="static/bootstrap.min.js"></script>
-    <script src="static/jquery.smooth-scroll.min.js"></script>
-    <script src="static/prettify.js"></script>
-    <script type="text/javascript">
-      $(function() {
-        // Syntax highlight code blocks.
-        prettyPrint();
+    </div>
+    <div class="row">
+      <div class="span12 logo">
+        <a href="http://oriley.me"><img src="static/logo-oriley.png" alt="O'Riley ME"/></a>
+      </div>
+    </div>
+  </div>
+</section>
+<script src="static/jquery.min.js"></script>
+<script src="static/bootstrap.min.js"></script>
+<script src="static/jquery.smooth-scroll.min.js"></script>
+<script src="static/prettify.js"></script>
+<script type="text/javascript">
+  $(function () {
+    // Syntax highlight code blocks.
+    prettyPrint();
 
-        // Spy on scroll position for real-time updating of current section.
-        $('body').scrollspy();
+    // Spy on scroll position for real-time updating of current section.
+    $('body').scrollspy();
 
-        // Use smooth-scroll for internal links.
-        $('a').smoothScroll();
+    // Use smooth-scroll for internal links.
+    $('a').smoothScroll();
 
-        // Enable tooltips on the header nav image items.
-        $('.menu').tooltip({
-          placement: 'bottom',
-          trigger: 'hover',
-          container: 'body',
-          delay: {
-            show: 500,
-            hide: 0
-          }
-        });
-      });
-    </script>
-  </body>
+    // Enable tooltips on the header nav image items.
+    $('.menu').tooltip({
+      placement: 'bottom',
+      trigger: 'hover',
+      container: 'body',
+      delay: {
+        show: 500,
+        hide: 0
+      }
+    });
+  });
+</script>
+</body>
 </html>

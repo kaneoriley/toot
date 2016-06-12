@@ -143,7 +143,7 @@ h4 {
 }
 
 p.license {
-  font-family: fixed-width;
+  font-family: fixed-width, monospace;
 }
 
 .row .logo {
@@ -164,7 +164,7 @@ pre {
   white-space:pre;
 }
 pre.prettyprint {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .codeblock {
@@ -234,7 +234,7 @@ pre.prettyprint {
 @media (max-width: 410px) {
   header h1 {
     font-size: 30px;
-    line-height: 36x;
+    line-height: 36px;
   }
   h2 {
     font-size: 20px;
