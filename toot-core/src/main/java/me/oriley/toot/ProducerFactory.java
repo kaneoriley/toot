@@ -18,13 +18,21 @@ package me.oriley.toot;
 
 import android.support.annotation.NonNull;
 
-import java.util.Map;
+import java.util.*;
 
-interface Finder {
+@SuppressWarnings("WeakerAccess")
+public abstract class ProducerFactory {
+
+    static final String CLASS_SUFFIX = "$$ProducerFactory";
 
     @NonNull
-    Map<Class<?>, Producer> createProducers(@NonNull Object listener, @NonNull Class<?> targetClass);
+    protected final List<Class<?>> mProducedClasses = new ArrayList<>();
 
     @NonNull
-    Map<Class<?>, Subscriber> createSubscribers(@NonNull Object listener, @NonNull Class<?> targetClass);
+    final List<Class<?>> getProducedClasses() {
+        return mProducedClasses;
+    }
+
+    @NonNull
+    protected abstract Producer getProducer(@NonNull final Object host);
 }

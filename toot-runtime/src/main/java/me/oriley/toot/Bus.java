@@ -19,6 +19,7 @@
 package me.oriley.toot;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +31,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class Bus {
 
     private static final String DEFAULT = "default-bus";
+    private static final boolean DEBUG = false;
 
     @NonNull
     private final ConcurrentMap<Class<?>, Set<Subscriber>> mSubscribers = new ConcurrentHashMap<>();
@@ -41,13 +43,16 @@ public class Bus {
     private final ConcurrentMap<Class<?>, Set<Class<?>>> mFlattenHierarchyCache = new ConcurrentHashMap<>();
 
     @NonNull
+    private final ConcurrentMap<Class<?>, ProducerFactory> mProducerFactoryCache = new ConcurrentHashMap<>();
+
+    @NonNull
+    private final ConcurrentMap<Class<?>, SubscriberFactory> mSubscriberFactoryCache = new ConcurrentHashMap<>();
+
+    @NonNull
     private final String mTag;
 
     @NonNull
     private final ThreadEnforcer mEnforcer;
-
-    @NonNull
-    private final Finder mFinder;
 
     @NonNull
     private final ThreadLocal<ConcurrentLinkedQueue<DispatchInfo>> mDispatchQueue =
@@ -65,8 +70,6 @@ public class Bus {
             return false;
         }
     };
-
-    private volatile boolean mStrictMode;
 
 
     @SuppressWarnings("unused")
@@ -87,7 +90,6 @@ public class Bus {
     public Bus(@NonNull ThreadEnforcer enforcer, @NonNull String tag) {
         mEnforcer = enforcer;
         mTag = tag;
-        mFinder = new TootFinder();
     }
 
 
@@ -101,60 +103,74 @@ public class Bus {
         }
     }
 
-    private void register(@NonNull Object object, @NonNull Class<?> objectClass) {
-        Map<Class<?>, Producer> foundProducers = mFinder.createProducers(object, objectClass);
-        for (Class<?> type : foundProducers.keySet()) {
+    private <T> void register(@NonNull Object object, @NonNull Class<T> objectClass) {
+        SubscriberFactory subscriberFactory = findSubscriberFactoryForClass(objectClass);
+        ProducerFactory producerFactory = findProducerFactoryForClass(objectClass);
 
-            final Producer producer = foundProducers.get(type);
-            Producer previousProducer = mProducers.putIfAbsent(type, producer);
-            //checking if the previous producer existed
-            if (previousProducer != null) {
-                throw new IllegalArgumentException("Producer method for type " + type
-                        + " found on type " + producer.toString()
-                        + ", but already registered by type " + previousProducer.toString() + ".");
-            }
-            Set<Subscriber> subscribers = mSubscribers.get(type);
-            if (subscribers != null && !subscribers.isEmpty()) {
-                for (Subscriber subscriber : subscribers) {
-                    dispatchProducedEvent(subscriber, producer);
+        if (subscriberFactory == null && producerFactory == null) {
+            log("No Subscriber or Producer found for: %s.", objectClass);
+            return;
+        }
+
+        if (producerFactory != null) {
+            List<Class<?>> producerClasses = producerFactory.getProducedClasses();
+            for (Class<?> type : producerClasses) {
+
+                final Producer producer = producerFactory.getProducer(object);
+                Producer previousProducer = mProducers.putIfAbsent(type, producer);
+                //checking if the previous producer existed
+                if (previousProducer != null) {
+                    throw new IllegalArgumentException("Producer method for type " + type
+                            + " found on type " + producer.toString()
+                            + ", but already registered by type " + previousProducer.toString() + ".");
+                }
+                Set<Subscriber> subscribers = mSubscribers.get(type);
+                if (subscribers != null && !subscribers.isEmpty()) {
+                    for (Subscriber subscriber : subscribers) {
+                        dispatchProducedEvent(subscriber, producer, type);
+                    }
                 }
             }
         }
 
-        Map<Class<?>, Subscriber> foundSubscribersMap = mFinder.createSubscribers(object, objectClass);
-        for (Class<?> type : foundSubscribersMap.keySet()) {
-            Set<Subscriber> subscribers = mSubscribers.get(type);
-            if (subscribers == null) {
-                //concurrent put if absent
-                Set<Subscriber> subscriberSet = new CopyOnWriteArraySet<>();
-                subscribers = mSubscribers.putIfAbsent(type, subscriberSet);
+        if (subscriberFactory != null) {
+            Subscriber subscriber = null;
+            List<Class<?>> subscriberClasses = subscriberFactory.getSubscribedClasses();
+            for (Class<?> type : subscriberClasses) {
+                Set<Subscriber> subscribers = mSubscribers.get(type);
                 if (subscribers == null) {
-                    subscribers = subscriberSet;
+                    //concurrent put if absent
+                    Set<Subscriber> subscriberSet = new CopyOnWriteArraySet<>();
+                    subscribers = mSubscribers.putIfAbsent(type, subscriberSet);
+                    if (subscribers == null) {
+                        subscribers = subscriberSet;
+                    }
                 }
-            }
 
-            final Subscriber foundSubscriber = foundSubscribersMap.get(type);
-            if (!subscribers.add(foundSubscriber)) {
-                if (mStrictMode) {
-                    throw new IllegalArgumentException("Object " + object  + " already registered.");
-                } else {
+                subscriber = subscriberFactory.getSubscriber(object);
+                if (!subscribers.add(subscriber)) {
+                    log("Failed to add subscriber: %s, event: %s.", subscriber, type);
                     return;
+                } else {
+                    log("Registered subscriber: %s, event: %s.", subscriber, type);
                 }
             }
-        }
 
-        for (Map.Entry<Class<?>, Subscriber> entry : foundSubscribersMap.entrySet()) {
-            Class<?> type = entry.getKey();
-            Producer producer = mProducers.get(type);
-            if (producer != null && producer.isValid()) {
-                Subscriber foundSubscriber = entry.getValue();
-                if (!producer.isValid()) {
-                    break;
-                }
-                if (foundSubscriber.isValid()) {
-                    dispatchProducedEvent(foundSubscriber, producer);
+            for (Class<?> type : subscriberClasses) {
+                Producer producer = mProducers.get(type);
+                if (producer != null && producer.isValid() && subscriber != null) {
+                    if (!producer.isValid()) {
+                        break;
+                    }
+                    if (subscriber.isValid()) {
+                        log("Dispatching To subscriber: %s, event: %s.", subscriber, type);
+                        dispatchProducedEvent(subscriber, producer, type);
+                    } else {
+                        log("Not dispatching to invalid subscriber: %s.", subscriber);
+                    }
                 }
             }
+
         }
     }
 
@@ -169,46 +185,52 @@ public class Bus {
     }
 
     private void unregister(@NonNull Object object, @NonNull Class<?> objectClass) {
-        Map<Class<?>, Producer> producersInListener = mFinder.createProducers(object, objectClass);
-        for (Map.Entry<Class<?>, Producer> entry : producersInListener.entrySet()) {
-            final Class<?> key = entry.getKey();
-            Producer producer = mProducers.get(key);
-            Producer value = entry.getValue();
+        SubscriberFactory subscriberFactory = findSubscriberFactoryForClass(objectClass);
+        ProducerFactory producerFactory = findProducerFactoryForClass(objectClass);
 
-            if (value == null || !value.equals(producer)) {
-                if (mStrictMode) {
-                    throw new IllegalArgumentException(
-                            "Missing event producer for an annotated method. Is " + object.getClass() + " registered?");
-                } else {
-                    return;
-                }
-            }
-
-            mProducers.remove(key).invalidate();
+        if (subscriberFactory == null && producerFactory == null) {
+            log("No subscriber or producer found for: %s.", objectClass);
+            return;
         }
 
-        Map<Class<?>, Subscriber> subscribers = mFinder.createSubscribers(object, objectClass);
-        for (Map.Entry<Class<?>, Subscriber> entry : subscribers.entrySet()) {
-            Set<Subscriber> currentSubscribers = mSubscribers.get(entry.getKey());
-            Subscriber subscriber = entry.getValue();
+        if (producerFactory != null) {
+            List<Class<?>> producerClasses = producerFactory.getProducedClasses();
+            for (Class<?> cls : producerClasses) {
+                Producer producer = mProducers.get(cls);
 
-            if (currentSubscribers == null || !currentSubscribers.contains(subscriber)) {
-                if (mStrictMode) {
-                    throw new IllegalArgumentException(
-                            "Missing event subscriber for an annotated method. Is " + object.getClass()
-                                    + " registered?");
-                } else {
+                if (producer == null) {
+                    log("Missing event producer for an annotated method. Is %s registered?", objectClass);
                     return;
                 }
-            }
 
-            subscriber.invalidate();
-            currentSubscribers.remove(subscriber);
+                producer.invalidate();
+                mProducers.remove(cls);
+            }
+        }
+
+        if (subscriberFactory != null) {
+            List<Class<?>> subscriberClasses = subscriberFactory.getSubscribedClasses();
+            for (Class<?> type : subscriberClasses) {
+                boolean removed = false;
+                Set<Subscriber> currentSubscribers = mSubscribers.get(type);
+                for (Subscriber subscriber : currentSubscribers) {
+                    if (subscriber.host.get() == object) {
+                        subscriber.invalidate();
+                        currentSubscribers.remove(subscriber);
+                        log("Unregistered Subscriber: %s, Event: %s.", subscriber, type);
+                        removed = true;
+                    }
+                }
+
+                if (!removed) {
+                    log( "Missing event subscriber for an annotated method. Is %s registered?", objectClass);
+                }
+            }
         }
     }
 
     @SuppressWarnings("unused")
-    public <T extends Event> void post(@NonNull T event) {
+    public <E> void post(@NonNull E event) {
         mEnforcer.enforce(this);
 
         Set<Class<?>> dispatchTypes = flattenHierarchy(event.getClass());
@@ -232,12 +254,55 @@ public class Bus {
         dispatchQueuedEvents();
     }
 
-    @SuppressWarnings("unused")
-    public void setStrictMode(boolean strictMode) {
-        mStrictMode = strictMode;
+    @Nullable
+    private SubscriberFactory findSubscriberFactoryForClass(Class<?> cls) {
+        SubscriberFactory factory = mSubscriberFactoryCache.get(cls);
+        if (factory != null) {
+            log("Subscriber cached in factory map for %s.", cls);
+            return factory;
+        }
+
+        try {
+            Class<?> factoryClass = Class.forName(cls.getName() + SubscriberFactory.CLASS_SUFFIX);
+            //noinspection unchecked
+            factory = (SubscriberFactory) factoryClass.newInstance();
+            log("Subscriber loaded factory class for %s.", cls);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            log("Subscriber not found for %s.", cls, cls.getSuperclass());
+            factory = null;
+        }
+
+        if (factory != null) {
+            mSubscriberFactoryCache.put(cls, factory);
+        }
+        return factory;
     }
 
-    private <T extends Event> void enqueueEvent(@NonNull T event, @NonNull Subscriber<T> subscriber) {
+    @Nullable
+    private ProducerFactory findProducerFactoryForClass(Class<?> cls) {
+        ProducerFactory factory = mProducerFactoryCache.get(cls);
+        if (factory != null) {
+            log("Producer cached in factory map for %s.", cls);
+            return factory;
+        }
+
+        try {
+            Class<?> factoryClass = Class.forName(cls.getName() + ProducerFactory.CLASS_SUFFIX);
+            //noinspection unchecked
+            factory = (ProducerFactory) factoryClass.newInstance();
+            log("Producer loaded factory class for %s.", cls);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            log("Producer not found for %s.", cls);
+            factory = null;
+        }
+
+        if (factory != null) {
+            mProducerFactoryCache.put(cls, factory);
+        }
+        return factory;
+    }
+
+    private <E> void enqueueEvent(@NonNull E event, @NonNull Subscriber subscriber) {
         mDispatchQueue.get().offer(new DispatchInfo<>(event, subscriber));
     }
 
@@ -263,17 +328,24 @@ public class Bus {
         }
     }
 
-    private <T extends Event> void dispatchProducedEvent(@NonNull Subscriber<T> subscriber, Producer<T> producer) {
+    private <E> void dispatchProducedEvent(@NonNull Subscriber subscriber,
+                                                         @NonNull Producer producer,
+                                                         @NonNull Class<E> eventClass) {
         if (producer.isValid()) {
-            dispatch(producer.produceEvent(), subscriber);
+            E event = producer.dispatchProduceEvent(eventClass);
+            if (event != null) {
+                dispatch(event, subscriber);
+            } else {
+                throw new IllegalStateException(producer.toString() + " returned null for event type " + eventClass);
+            }
         } else {
             throw new IllegalStateException(producer.toString() + " has been invalidated and can no longer produce events.");
         }
     }
 
-    private <T extends Event> void dispatch(@NonNull T event, @NonNull Subscriber<T> subscriber) {
+    private <E> void dispatch(@NonNull E event, @NonNull Subscriber subscriber) {
         if (subscriber.isValid()) {
-            subscriber.onEvent(event);
+            subscriber.dispatchEvent(event);
         } else {
             throw new IllegalStateException(subscriber.toString() + " has been invalidated and can no longer receive events.");
         }
@@ -316,21 +388,27 @@ public class Bus {
         return classes;
     }
 
+    private static void log(@NonNull String message, @NonNull Object... args) {
+        if (DEBUG) {
+            System.out.println("TOOT -- " + String.format(message, args));
+        }
+    }
+
     @Override
     public String toString() {
         return "[Bus \"" + mTag + "\"]";
     }
 
-    static class DispatchInfo<T extends Event> {
+    static class DispatchInfo<E> {
 
         @NonNull
-        final T event;
+        final E event;
 
         @NonNull
-        final Subscriber<T> subscriber;
+        final Subscriber subscriber;
 
 
-        DispatchInfo(@NonNull T event, @NonNull Subscriber<T> subscriber) {
+        DispatchInfo(@NonNull E event, @NonNull Subscriber subscriber) {
             this.event = event;
             this.subscriber = subscriber;
         }

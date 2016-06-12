@@ -3,6 +3,9 @@
 [![Build Status](https://travis-ci.org/oriley-me/toot.svg?branch=master)](https://travis-ci.org/oriley-me/toot)
 [![Dependency Status](https://www.versioneye.com/user/projects/575a1e057757a0004a1deb66/badge.svg?style=flat)](https://www.versioneye.com/user/projects/575a1e057757a0004a1deb66)<br/>
 
+<a href="http://www.methodscount.com/?lib=com.github.oriley-me.toot%3Atoot-runtime%3A0.1.1"><img src="https://img.shields.io/badge/toot_runtime-methods: 112 | deps: 20 | size: 17 KB-f44336.svg"></img></a><br>
+<a href="http://www.methodscount.com/?lib=com.github.oriley-me.toot%3Atoot-android%3A0.1.1"><img src="https://img.shields.io/badge/toot_android-+methods: 15 | +deps: 0 | +size: 1 KB-ff9800.svg"></img></a>
+
 # Toot
 ![Logo](artwork/icon.png)
 

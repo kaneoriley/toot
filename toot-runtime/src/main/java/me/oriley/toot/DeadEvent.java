@@ -20,7 +20,7 @@ package me.oriley.toot;
 import android.support.annotation.NonNull;
 
 @SuppressWarnings("WeakerAccess")
-public final class DeadEvent<T> extends Event {
+public final class DeadEvent<T> {
 
     @NonNull
     public final Bus bus;

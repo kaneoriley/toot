@@ -16,6 +16,5 @@ for (File file : sdkHandler.sdkLoader.repositories) {
 dependencies {
     compile project(':toot-annotations')
     compile project(':toot-core')
-    compile project(':toot-dummy')
     compile 'com.squareup:javapoet:1.7.0'
 }

@@ -19,25 +19,35 @@ package me.oriley.toot;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-abstract class Producer<T extends Event> {
+import java.lang.ref.WeakReference;
 
-    @SuppressWarnings("WeakerAccess")
+@SuppressWarnings("WeakerAccess")
+public abstract class Producer {
+
     @NonNull
-    final Object delegate;
-
-    private final int mHashCode;
+    public final WeakReference<Object> host;
 
     private boolean mValid = true;
 
 
-    protected Producer(@NonNull Object delegate) {
-        this.delegate = delegate;
-        this.mHashCode = delegate.hashCode();
+    public Producer(@NonNull Object host) {
+        this.host = new WeakReference<>(host);
     }
 
+    @Nullable
+    <E> E dispatchProduceEvent(@NonNull Class<E> eventClass) {
+        Object object = host.get();
+        if (object != null) {
+            return produceEvent(object, eventClass);
+        } else {
+            return null;
+        }
+    }
+
+    protected abstract <E> E produceEvent(@NonNull final Object host, @NonNull final Class<E> eventClass);
 
     boolean isValid() {
-        return mValid;
+        return mValid && host.get() != null;
     }
 
     void invalidate() {
@@ -45,29 +55,8 @@ abstract class Producer<T extends Event> {
     }
 
     @Override
-    public boolean equals(@Nullable Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        //noinspection SimplifiableIfStatement
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        return delegate.equals(((Subscriber) o).delegate);
-    }
-
-    @Override
-    public int hashCode() {
-        return mHashCode;
-    }
-
-    @Override
     public String toString() {
-        return "[Producer \"" + delegate.getClass().getName() + "\"]";
+        Object object = host.get();
+        return "[Producer \"" + (object != null ? object.getClass().getName() : null) + "\" : " + hashCode() + "]";
     }
-
-    @NonNull
-    abstract T produceEvent();
 }

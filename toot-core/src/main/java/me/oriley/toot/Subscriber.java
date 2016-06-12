@@ -17,27 +17,33 @@
 package me.oriley.toot;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-abstract class Subscriber<T extends Event> {
+import java.lang.ref.WeakReference;
 
-    @SuppressWarnings("WeakerAccess")
+@SuppressWarnings("WeakerAccess")
+public abstract class Subscriber {
+
     @NonNull
-    final Object delegate;
-
-    private final int mHashCode;
+    public final WeakReference<Object> host;
 
     private boolean mValid = true;
 
 
-    protected Subscriber(@NonNull Object delegate) {
-        this.delegate = delegate;
-        this.mHashCode = delegate.hashCode();
+    public Subscriber(@NonNull Object host) {
+        this.host = new WeakReference<>(host);
     }
 
+    void dispatchEvent(@NonNull Object event) {
+        Object object = host.get();
+        if (object != null) {
+            onEvent(object, event);
+        }
+    }
+
+    protected abstract void onEvent(@NonNull Object host, @NonNull final Object event);
 
     boolean isValid() {
-        return mValid;
+        return mValid && host.get() != null;
     }
 
     void invalidate() {
@@ -45,28 +51,8 @@ abstract class Subscriber<T extends Event> {
     }
 
     @Override
-    public boolean equals(@Nullable Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        //noinspection SimplifiableIfStatement
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        return delegate.equals(((Subscriber) o).delegate);
-    }
-
-    @Override
-    public int hashCode() {
-        return mHashCode;
-    }
-
-    @Override
     public String toString() {
-        return "[Subscriber \"" + delegate.getClass().getName() + "\"]";
+        Object object = host.get();
+        return "[Subscriber \"" + (object != null ? object.getClass().getName() : null) + "\" : " + hashCode() + "]";
     }
-
-    abstract void onEvent(@NonNull T event);
 }
