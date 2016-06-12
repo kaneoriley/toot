@@ -77,7 +77,8 @@
         <h4>Publishing</h4>
         <p>Event publishing is the most important part of the bus as it allows you to tell subscribers that an
           action has occurred. An instance of any class that extends <code>Event</code> may be published on the bus
-          and it will only be dispatched to subscribers for that type. The class must be at least package visibility.</p>
+          and it will only be dispatched to subscribers for that type. The class must be at least package visibility.
+        </p>
         <p>To publish a new event, call the <code>post</code> method:</p>
         <div class="codeblock">
           <pre class="prettyprint">bus.post(new AnswerAvailableEvent(42));</pre>
@@ -177,7 +178,8 @@ Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
 }</pre>
         </div>
 
-        <p>Replace all version numbers <strong>x.y.z</strong> with the value shown in the JitPack badge shown above.</p>
+        <p>Replace all version numbers <strong>x.y.z</strong> with the value specified in the JitPack badge shown above.
+        </p>
 
         <p>If you would like to check out the latest development version, please substitute all versions for
           <strong>develop-SNAPSHOT</strong>. Keep in mind that it is very likely things could break or be unfinished,
