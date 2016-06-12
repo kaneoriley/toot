@@ -1,7 +1,11 @@
 Change Log
 ==========
 
-## 0.1.1 (_2016-04-24_)
+## 0.1.2 WIP
+
+* Allow protected visibility classes/methods
+
+## 0.1.1 (_2016-06_12_)
 
 * Remove `Event` base class and requirement to extend
 
