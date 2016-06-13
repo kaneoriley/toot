@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2016 Sergey Solovyev
  * Copyright (C) 2016 Kane O'Riley
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,14 +24,13 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
 import static javax.tools.Diagnostic.Kind.ERROR;
 
-public final class TootProcessor extends AbstractProcessor {
+public final class TootProcessor extends BaseProcessor {
 
     private static final String GET_SUBSCRIBER = "getSubscriber";
     private static final String GET_PRODUCER = "getProducer";
@@ -46,18 +44,10 @@ public final class TootProcessor extends AbstractProcessor {
     @NonNull
     private Filer mFiler;
 
-    @NonNull
-    private Elements mElements;
-
-    @NonNull
-    private Messager mMessager;
-
     @Override
     public synchronized void init(ProcessingEnvironment env) {
         super.init(env);
         mFiler = env.getFiler();
-        mMessager = env.getMessager();
-        mElements = env.getElementUtils();
     }
 
     @Override
@@ -65,12 +55,10 @@ public final class TootProcessor extends AbstractProcessor {
         return SourceVersion.latestSupported();
     }
 
+    @NonNull
     @Override
-    public Set<String> getSupportedAnnotationTypes() {
-        Set<String> types = new LinkedHashSet<>();
-        types.add(Subscribe.class.getCanonicalName());
-        types.add(Produce.class.getCanonicalName());
-        return types;
+    protected Class[] getSupportedAnnotationClasses() {
+        return new Class[] { Subscribe.class, Produce.class };
     }
 
     @Override
@@ -98,27 +86,6 @@ public final class TootProcessor extends AbstractProcessor {
         }
 
         return false;
-    }
-
-    @NonNull
-    private String getPackageName(@NonNull TypeElement type) {
-        return mElements.getPackageOf(type).getQualifiedName().toString();
-    }
-
-    @NonNull
-    private String getClassName(@NonNull TypeElement type, @NonNull String packageName) {
-        int packageLen = packageName.length() + 1;
-        return type.getQualifiedName().toString().substring(packageLen).replace('.', '$');
-    }
-
-    @Nullable
-    private static TypeElement findEnclosingElement(@NonNull Element e) {
-        Element base = e.getEnclosingElement();
-        while (base != null && !(base instanceof TypeElement)) {
-            base = base.getEnclosingElement();
-        }
-
-        return base != null ? TypeElement.class.cast(base) : null;
     }
 
     @NonNull
@@ -265,11 +232,6 @@ public final class TootProcessor extends AbstractProcessor {
         return builder.add("        }\n").add("    }\n").add("};\n").build();
     }
 
-    private boolean isPrivate(@NonNull Element element) {
-        Set<Modifier> modifiers = element.getModifiers();
-        return modifiers.contains(Modifier.PRIVATE);
-    }
-
     @NonNull
     private Map<TypeElement, EventMethodsMap> collectMethods(@NonNull RoundEnvironment env,
                                                              boolean subscribers) throws TootProcessorException {
@@ -287,6 +249,8 @@ public final class TootProcessor extends AbstractProcessor {
             // methods must be public as generated code will call it directly
             if (isPrivate(method)) {
                 throw new TootProcessorException("Method must not be private: " + methodName);
+            } else if (isStatic(method)) {
+                throw new TootProcessorException("Method must not be static: " + methodName);
             }
 
             final List<? extends VariableElement> parameters = method.getParameters();
