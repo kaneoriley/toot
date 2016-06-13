@@ -63,7 +63,7 @@
           <a href="https://github.com/google/guava" target="_blank">Guava</a>), Toot adds the speed of using compile
           time code generation, rather than using reflection like the predecessors. On top of that, Toot supports
           subscribers in super classes, and doesn't throw an exception if you try to unregister a class which is not
-          registered (optional, but defaults to off).</p>
+          registered.</p>
 
         <h3 id="usage">Usage</h3>
         <p>Toot is designed with Android-specific use cases (although it can be used in Java only projects as well)
@@ -77,7 +77,7 @@
         <h4>Publishing</h4>
         <p>Event publishing is the most important part of the bus as it allows you to tell subscribers that an
           action has occurred. An instance of any class may be published on the bus and it will only be dispatched to
-          subscribers for that type. The class must be at least package visibility.
+          subscribers for that type. The class must not be private.
         </p>
         <p>To publish a new event, call the <code>post</code> method:</p>
         <div class="codeblock">
@@ -96,8 +96,8 @@ void onAnswerAvailable(AnswerAvailableEvent event) {
     // TODO: React to the event somehow!
 }</pre>
         </div>
-        <p>The name of the method can be anything you like. The annotation, single argument, and at least package
-          visible accessor are all that is required.</p>
+        <p>The name of the method can be anything you like. The annotation, single argument, non-static and a
+          non-private access level are all that is required.</p>
         <p>In order to receive events, a class instance needs to register with the bus. If <code>this</code> refers
           to an instance of the class in which the previous method was present, we can register using the
           following:</p>
