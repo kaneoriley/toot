@@ -13,7 +13,7 @@ Toot is an event bus designed to decouple different parts of your application wh
 
 Forked from Otto (which in turn forked from Guava), Toot adds the speed of using compile time code generation, rather
 than using reflection like the predecessors. On top of that, Toot supports subscribers in super classes, and doesn't
-throw an exception if you try to unregister a class which is not registered (optional, but defaults to off).
+throw an exception if you try to unregister a class which is not registered.
 
 *For usage instructions please see [the website](http://oriley-me.github.io/toot).*
 
