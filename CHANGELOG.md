@@ -1,9 +1,11 @@
 Change Log
 ==========
 
-## 0.1.2 WIP
+## 0.1.2 _2016-06_13_
 
 * Allow protected visibility classes/methods
+* Don't allow static methods
+* Optimise flattened class hierarchy to ignore uninteresting classes
 
 ## 0.1.1 (_2016-06_12_)
 
