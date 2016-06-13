@@ -97,7 +97,7 @@ public class Bus {
     public void register(@NonNull Object object) {
         mEnforcer.enforce(this);
 
-        Set<Class<?>> registerTypes = flattenHierarchy(object.getClass());
+        Set<Class<?>> registerTypes = flattenHierarchy(object.getClass(), true);
         for (Class<?> type : registerTypes) {
             register(object, type);
         }
@@ -178,7 +178,7 @@ public class Bus {
     public void unregister(@NonNull Object object) {
         mEnforcer.enforce(this);
 
-        Set<Class<?>> unregisterTypes = flattenHierarchy(object.getClass());
+        Set<Class<?>> unregisterTypes = flattenHierarchy(object.getClass(), true);
         for (Class<?> type : unregisterTypes) {
             unregister(object, type);
         }
@@ -233,7 +233,7 @@ public class Bus {
     public <E> void post(@NonNull E event) {
         mEnforcer.enforce(this);
 
-        Set<Class<?>> dispatchTypes = flattenHierarchy(event.getClass());
+        Set<Class<?>> dispatchTypes = flattenHierarchy(event.getClass(), false);
 
         boolean dispatched = false;
         for (Class<?> eventType : dispatchTypes) {
@@ -352,10 +352,10 @@ public class Bus {
     }
 
     @NonNull
-    private Set<Class<?>> flattenHierarchy(@NonNull Class<?> concreteClass) {
+    private Set<Class<?>> flattenHierarchy(@NonNull Class<?> concreteClass, boolean requireFactory) {
         Set<Class<?>> classes = mFlattenHierarchyCache.get(concreteClass);
         if (classes == null) {
-            Set<Class<?>> classesCreation = getClassesFor(concreteClass);
+            Set<Class<?>> classesCreation = getClassesFor(concreteClass, requireFactory);
             classes = mFlattenHierarchyCache.putIfAbsent(concreteClass, classesCreation);
             if (classes == null) {
                 classes = classesCreation;
@@ -366,7 +366,7 @@ public class Bus {
     }
 
     @NonNull
-    private Set<Class<?>> getClassesFor(@NonNull Class<?> concreteClass) {
+    private Set<Class<?>> getClassesFor(@NonNull Class<?> concreteClass, boolean requireFactory) {
         List<Class<?>> parents = new LinkedList<>();
         Set<Class<?>> classes = new HashSet<>();
 
@@ -374,7 +374,17 @@ public class Bus {
 
         while (!parents.isEmpty()) {
             Class<?> clazz = parents.remove(0);
-            classes.add(clazz);
+
+            boolean validClass = true;
+            if (requireFactory) {
+                SubscriberFactory subscriberFactory = findSubscriberFactoryForClass(clazz);
+                ProducerFactory producerFactory = findProducerFactoryForClass(clazz);
+                validClass = (subscriberFactory != null || producerFactory != null);
+            }
+
+            if (validClass) {
+                classes.add(clazz);
+            }
 
             Class<?> parent = clazz.getSuperclass();
             if (parent != null) {
@@ -388,9 +398,12 @@ public class Bus {
         return classes;
     }
 
-    private static void log(@NonNull String message, @NonNull Object... args) {
+    private static void log(@NonNull String message, @Nullable Object... args) {
         if (DEBUG) {
-            System.out.println("TOOT -- " + String.format(message, args));
+            if (args != null) {
+                message = String.format(message, args);
+            }
+            System.out.println("TOOT -- " + message);
         }
     }
 
