@@ -224,11 +224,11 @@ a {
 }
 
 a:hover {
-    color: #FF3D00;
+    color: #F44336;
 }
 
 a:visited {
-    color: #FF3D00;
+    color: #F44336;
     text-decoration: none;
 }
 
