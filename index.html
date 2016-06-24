@@ -256,11 +256,17 @@ limitations under the License.</pre>
 
     $('a.smooth').click(function (e) {
       e.preventDefault();
-      var speed = 700;
+      var speed = 1200;
       var href = $(this).attr("href");
       var target = $(href == "#" || href == "" ? 'html' : href);
       var position = target.get(0).offsetTop - 24;
       $(".mdl-layout__content").animate({scrollTop: position}, speed, "swing");
+
+      // close the drawer the button is clicked
+      if ($('.mdl-layout__obfuscator').is('.is-visible')) {
+        $('.mdl-layout__drawer').toggleClass('is-visible')
+        $('.mdl-layout__obfuscator').toggleClass('is-visible')
+      }
     });
   });
 </script>
