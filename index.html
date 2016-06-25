@@ -34,7 +34,8 @@
   <link rel="canonical" href="http://www.example.com/">
   -->
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.red-amber.min.css">
   <link rel="stylesheet" href="styles.css">
@@ -188,7 +189,8 @@ Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
            style="display: none;">
         <div class="mdl-card__title mdl-card--expand mdl-color--red-500">Dependency Setup&nbsp;&nbsp;&nbsp;&nbsp;<a
                 href="https://jitpack.io/#com.github.oriley-me/toot" target="_blank"><img
-                src="https://jitpack.io/v/com.github.oriley-me/toot.svg" alt="JitPack"></a></div>
+                src="https://img.shields.io/badge/JitPack-...-lightgrey.svg?style=flat-square"
+                data-src="https://jitpack.io/v/com.github.oriley-me/toot.svg?style=flat-square" alt="JitPack"></a></div>
         <div class="mdl-card__supporting-text mdl-color-text--grey-600">
           <p>The source code to Toot, and this website is <a href="http://github.com/oriley-me/toot">available on
             GitHub</a>.</p>
@@ -202,18 +204,19 @@ Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
           <h5>Add the required dependencies to your app module</h5>
           <div class="codeblock"><pre class="prettyprint">dependencies {
     // Required
-    provided 'com.github.oriley-me.toot:toot-annotations:x.y.z'
-    apt 'com.github.oriley-me.toot:toot-processor:x.y.z'
+    provided 'com.github.oriley-me.toot:toot-annotations:<span class="version">x.y.z</span>'
+    apt 'com.github.oriley-me.toot:toot-processor:<span class="version">x.y.z</span>'
 
     // Only use this if you want to use a UiBus/UiThreadEnforcer (will automatically include toot-runtime)
-    compile 'com.github.oriley-me.toot:toot-android:x.y.z'
+    compile 'com.github.oriley-me.toot:toot-android:<span class="version">x.y.z</span>'
 
     // Use this if you want to handle threading yourself, or use Toot on a non Android project
-    compile 'com.github.oriley-me.toot:toot-runtime:x.y.z'
+    compile 'com.github.oriley-me.toot:toot-runtime:<span class="version">x.y.z</span>'
 }</pre>
           </div>
 
-          <p>Replace all version numbers <strong>x.y.z</strong> with the value specified in the JitPack badge shown
+          <p class="version-hint">Replace all version numbers <strong>x.y.z</strong> with the value specified in the
+            JitPack badge shown
             above.
           </p>
 
@@ -253,8 +256,9 @@ limitations under the License.</pre>
 </div>
 
 <script src="https://code.getmdl.io/1.1.3/material.min.js"></script>
-<script src="static/jquery.min.js"></script>
-<script src="static/prettify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+<script src="static/jquery.jitpack.js"></script>
 <script type="text/javascript">
   $(function () {
     // Syntax highlight code blocks.
@@ -281,6 +285,31 @@ limitations under the License.</pre>
       }
     });
   });
+
+  function deferLoad(deferred) {
+    var source = deferred.getAttribute('data-src');
+    if (source) {
+      var img = new Image();
+      img.onload = function() {
+        deferred.setAttribute('src', source);
+      };
+      img.src = source;
+    }
+  }
+
+  function init() {
+    var imgDefer = document.getElementsByTagName('img');
+    for (var i = 0; i < imgDefer.length; i++) {
+      deferLoad(imgDefer[i]);
+    }
+
+    // Look up the latest version of the library.
+    $.fn.latestVersion('com.github.oriley-me', 'toot', function (version) {
+      $('.version').text(version);
+      $('.version-hint').hide();
+    });
+  }
+  window.onload = init;
 </script>
 </body>
 </html>
