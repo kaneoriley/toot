@@ -16,16 +16,11 @@
 
 html, body {
     font-family: 'Roboto', 'Helvetica', sans-serif;
-}
-
-.demo-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 24px;
+    height: 100vh;
 }
 
 .demo-layout .demo-header .mdl-textfield {
-    padding: 0px;
+    padding: 0;
     margin-top: 41px;
 }
 
@@ -35,10 +30,6 @@ html, body {
 
 .demo-layout .mdl-layout__header .mdl-layout__drawer-button {
     color: rgba(0, 0, 0, 0.54);
-}
-
-.mdl-layout__drawer .avatar {
-    margin-bottom: 16px;
 }
 
 .demo-drawer {
@@ -79,20 +70,6 @@ html, body {
     height: 151px;
 }
 
-.demo-avatar-dropdown {
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    position: relative;
-    -webkit-flex-direction: row;
-    -ms-flex-direction: row;
-    flex-direction: row;
-    -webkit-align-items: center;
-    -ms-flex-align: center;
-    align-items: center;
-    width: 100%;
-}
-
 .demo-navigation {
     -webkit-flex-grow: 1;
     -ms-flex-positive: 1;
@@ -127,68 +104,19 @@ html, body {
     max-width: 1080px;
 }
 
-.demo-cards {
-    -webkit-align-items: flex-start;
-    -ms-flex-align: start;
-    -ms-grid-row-align: flex-start;
-    align-items: flex-start;
-    -webkit-align-content: flex-start;
-    -ms-flex-line-pack: start;
-    align-content: flex-start;
-}
-
-.demo-cards .demo-separator {
-    height: 32px;
-}
-
-.demo-cards ul {
-    padding: 0;
-}
-
-.demo-cards h3 {
-    font-size: 1em;
-}
-
-.demo-cards .mdl-card__actions a {
-    color: #00BCD4;
-    text-decoration: none;
-}
-
-.demo-options h3 {
-    margin: 0;
-}
-
-.demo-options .mdl-checkbox__box-outline {
-    border-color: rgba(255, 255, 255, 0.89);
-}
-
-.demo-options ul {
-    margin: 0;
-    list-style-type: none;
-}
-
-.demo-options li {
-    margin: 4px 0;
-}
-
-.demo-options .material-icons {
-    color: rgba(255, 255, 255, 0.89);
-}
-
-.demo-options .mdl-card__actions {
-    height: 64px;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    box-sizing: border-box;
-    -webkit-align-items: center;
-    -ms-flex-align: center;
-    align-items: center;
-}
-
 .mdl-card__title {
     color: white;
     text-transform: uppercase;
+}
+
+.mdl-layout__content {
+    overflow-y: scroll;
+    height: 100%;
+}
+
+.mdl-card__supporting-text {
+    margin: auto;
+    padding: 16px 16px 0px 16px;
 }
 
 pre, code {
@@ -215,7 +143,7 @@ pre {
 
 .row .logo {
     text-align: center;
-    margin-top: 150px;
+    margin-top: 64px;
     margin-bottom: 32px;
 }
 
