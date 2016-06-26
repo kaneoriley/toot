@@ -35,9 +35,13 @@
             },
             'dataType': 'jsonp',
             'success': function(response) {
-                var version = response.query.results.json.version;
-                if (typeof version !== "undefined") {
-                    callback(version)
+                try {
+                    var version = response.query.results.json.version;
+                    if (typeof version !== "undefined") {
+                        callback(version)
+                    }
+                } catch (err) {
+                    console.log("Error parsing response: " + err.message);
                 }
             }
         });
