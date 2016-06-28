@@ -15,7 +15,7 @@
  */
 
 html, body {
-    font-family: 'Roboto', 'Helvetica', sans-serif;
+    font-family: 'Roboto', sans-serif;
     height: 100vh;
 }
 
@@ -107,6 +107,8 @@ html, body {
 .mdl-card__title {
     color: white;
     text-transform: uppercase;
+    font-size: 18px;
+    min-height: 64px;
 }
 
 .mdl-layout__content {
@@ -116,7 +118,7 @@ html, body {
 
 .mdl-card__supporting-text {
     margin: auto;
-    padding: 16px 16px 0px 16px;
+    padding: 16px;
 }
 
 pre, code {
@@ -124,11 +126,26 @@ pre, code {
     border: 0;
     background-color: transparent;
 }
+
 pre {
-    display:inline-block;
-    white-space:pre;
+    display: inline-block;
+    white-space: pre;
     padding-left: 16px;
     padding-right: 16px;
+}
+
+pre.prettyprint {
+    border: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+code {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+    padding: 2px;
+    margin: 2px;
 }
 
 .codeblock {
@@ -137,8 +154,16 @@ pre {
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #f5f5f5;
-    margin-top: 20px;
     margin-bottom: 20px;
+}
+
+.no-bottom-padding {
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.no-bottom-margin {
+    margin-bottom: 0;
 }
 
 .row .logo {
@@ -147,35 +172,89 @@ pre {
     margin-bottom: 32px;
 }
 
+.action-bar-icons {
+    font-size: 24px;
+    color: #FF5722;
+}
+
 a {
-    color: #BF360C;
+    color: #FF5722;
 }
 
 a:hover {
-    color: #F44336;
+    color: #FF5722;
 }
 
 a:visited {
-    color: #F44336;
+    color: #FF5722;
     text-decoration: none;
 }
 
-/****************************************************************\
- **** Syntax highlighting styles ********************************
-\****************************************************************/
+/*! Color themes for Google Code Prettify | MIT License | github.com/jmblog/color-themes-for-google-code-prettify */
 
-.pln { color: #000; }
-.str { color: #F44336; }
-.kwd { color: #666; }
-.com { color: #F44336; }
-.typ { color: #222; }
-.lit { color: #666; }
-.pun { color: #888; }
-.opn { color: #888; }
-.clo { color: #888; }
-.tag { color: #F44336; }
-.atn { color: #606; }
-.atv { color: #080; }
-.dec { color: #606; }
-.var { color: #606; }
-.fun { color: #f00; }
+.pln {
+    color: #333
+}
+ol.linenums {
+    margin-top: 0;
+    margin-bottom: 0;
+    color: #ccc
+}
+li.L0,
+li.L1,
+li.L2,
+li.L3,
+li.L4,
+li.L5,
+li.L6,
+li.L7,
+li.L8,
+li.L9 {
+    padding-left: 1em;
+    background-color: #fff;
+    list-style-type: decimal
+}
+@media screen {
+    .str {
+        color: #183691
+    }
+    .kwd {
+        color: #a71d5d
+    }
+    .com {
+        color: #969896
+    }
+    .typ {
+        color: #0086b3
+    }
+    .lit {
+        color: #0086b3
+    }
+    .pun {
+        color: #333
+    }
+    .opn {
+        color: #333
+    }
+    .clo {
+        color: #333
+    }
+    .tag {
+        color: navy
+    }
+    .atn {
+        color: #795da3
+    }
+    .atv {
+        color: #183691
+    }
+    .dec {
+        color: #333
+    }
+    .var {
+        color: teal
+    }
+    .fun {
+        color: #900
+    }
+}

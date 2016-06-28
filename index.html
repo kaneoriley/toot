@@ -34,22 +34,11 @@
   <link rel="canonical" href="http://www.example.com/">
   -->
 
-  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.red-amber.min.css">
+  <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.deep_orange-red.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
   <link rel="stylesheet" href="styles.css">
-  <style>
-    #view-source {
-      position: fixed;
-      display: block;
-      right: 0;
-      bottom: 0;
-      margin-right: 40px;
-      margin-bottom: 40px;
-      z-index: 900;
-    }
-  </style>
 </head>
 <body>
 <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
@@ -58,12 +47,19 @@
       <span class="mdl-layout-title">Toot</span>
       <div class="mdl-layout-spacer"></div>
       <label class="mdl-button mdl-js-button mdl-button--icon">
-        <a class="smooth" href="#dependency"><i class="material-icons">file_download</i></a>
+        <a href="http://github.com/oriley-me/toot" target="_blank">
+          <i class="action-bar-icons fa fa-github" aria-hidden="true"></i>
+        </a>
+      </label>
+      <label class="mdl-button mdl-js-button mdl-button--icon">
+        <a class="smooth" href="#dependency">
+          <i class="action-bar-icons fa fa-download" aria-hidden="true"></i>
+        </a>
       </label>
     </div>
   </header>
-  <div class="demo-drawer mdl-layout__drawer mdl-color--red-900 mdl-color-text--white">
-    <nav class="demo-navigation mdl-navigation mdl-color--red-800">
+  <div class="demo-drawer mdl-layout__drawer mdl-color--deep-orange-900 mdl-color-text--white">
+    <nav class="demo-navigation mdl-navigation mdl-color--deep-orange-900">
       <a class="mdl-navigation__link smooth" href="#introduction">Introduction</a>
       <a class="mdl-navigation__link smooth" href="#usage">Usage</a>
       <a class="mdl-navigation__link smooth" href="#dependency">Dependency Setup</a>
@@ -77,12 +73,13 @@
     <div class="mdl-grid demo-content">
       <div id="introduction"
            class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-        <div class="mdl-card__title mdl-card--expand mdl-color--red-500">Introduction</div>
+        <div class="mdl-card__title mdl-card--expand mdl-color--deep-orange-500">Introduction</div>
         <div class="mdl-card__supporting-text mdl-color-text--grey-600">
           <p>Toot is an event bus designed to decouple different parts of your application while still allowing them
             to communicate efficiently.</p>
 
-          <p>Forked from <a href="http://square.github.io/otto/" target="_blank">Otto</a> (which in turn forked from
+          <p class="no-bottom-padding">Forked from <a href="http://square.github.io/otto/" target="_blank">Otto</a>
+            (which in turn forked from
             <a href="https://github.com/google/guava" target="_blank">Guava</a>), Toot adds the speed of using compile
             time code generation, rather than using reflection like the predecessors. On top of that, Toot supports
             subscribers in super classes, and doesn't throw an exception if you try to unregister a class which is not
@@ -92,7 +89,7 @@
       <div id="usage"
            class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop"
            style="display: none;">
-        <div class="mdl-card__title mdl-card--expand mdl-color--red-500">Usage</div>
+        <div class="mdl-card__title mdl-card--expand mdl-color--deep-orange-500">Usage</div>
         <div class="mdl-card__supporting-text mdl-color-text--grey-600">
           <p>Toot is designed with Android-specific use cases (although it can be used in Java only projects as well)
             in mind and is intended for use as a singleton (optional). Create an instance of an event bus with</p>
@@ -175,7 +172,7 @@ Bus bus1 = new Bus();
 Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
           </div>
 
-          <p>If you wish to confine operations to the main thread, you must use the <code>toot-android</code>
+          <p class="no-bottom-padding">If you wish to confine operations to the main thread, you must use the <code>toot-android</code>
             dependency,
             and instantiate the bus with a <code>UiThreadEnforcer</code>. The included <code>UiBus</code> class takes
             care
@@ -187,13 +184,18 @@ Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
       <div id="dependency"
            class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop"
            style="display: none;">
-        <div class="mdl-card__title mdl-card--expand mdl-color--red-500">Dependency Setup&nbsp;&nbsp;&nbsp;&nbsp;<a
-                href="https://jitpack.io/#com.github.oriley-me/toot" target="_blank"><img
-                src="https://img.shields.io/badge/JitPack-...-lightgrey.svg?style=flat-square"
-                data-src="https://jitpack.io/v/com.github.oriley-me/toot.svg?style=flat-square" alt="JitPack"></a></div>
+        <div class="mdl-card__title mdl-card--expand mdl-color--deep-orange-500">
+          <div style="width: 100%;">Dependency Setup</div>
+          <div style="width: 100%;">
+            <a href="https://jitpack.io/#com.github.oriley-me/toot" style="float: right;" target="_blank">
+              <img class="jitpack-badge" height="28" src="static/jitpack-placeholder.svg" alt="JitPack">
+            </a>
+          </div>
+        </div>
         <div class="mdl-card__supporting-text mdl-color-text--grey-600">
+
           <p>The source code to Toot, and this website is <a href="http://github.com/oriley-me/toot">available on
-            GitHub</a>.</p>
+            GitHub</a></p>
 
           <h5>Add JitPack.io to your projects repositories list</h5>
           <div class="codeblock"><pre class="prettyprint">repositories {
@@ -215,22 +217,17 @@ Bus bus2 = new Bus(ThreadEnforcer.ANY);</pre>
 }</pre>
           </div>
 
-          <p class="version-hint">Replace all version numbers <strong>x.y.z</strong> with the value specified in the
-            JitPack badge shown
-            above.
-          </p>
-
-          <p>If you would like to check out the latest development version, please substitute all versions for
-            <strong>develop-SNAPSHOT</strong>. Keep in mind that it is very likely things could break or be unfinished,
-            so stick the official releases if you want things to be more predictable.</p>
+          <p class="no-bottom-padding">If you would like to check out the latest development version, please substitute
+            all versions for <strong>-SNAPSHOT</strong>. Keep in mind that it is very likely things could break or be
+            unfinished, so stick the official releases if you want things to be more predictable.</p>
         </div>
       </div>
       <div id="license"
            class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop"
            style="display: none;">
-        <div class="mdl-card__title mdl-card--expand mdl-color--red-500">License</div>
+        <div class="mdl-card__title mdl-card--expand mdl-color--deep-orange-500">License</div>
         <div class="mdl-card__supporting-text mdl-color-text--grey-600">
-          <div class="codeblock"><pre>Copyright 2016 Kane O'Riley
+          <div class="codeblock no-bottom-margin"><pre>Copyright 2016 Kane O'Riley
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -257,7 +254,7 @@ limitations under the License.</pre>
 
 <script src="https://code.getmdl.io/1.1.3/material.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
 <script src="static/jquery.jitpack.js"></script>
 <script type="text/javascript">
   $(function () {
@@ -280,33 +277,22 @@ limitations under the License.</pre>
       // close the drawer the button is clicked
       var obfuscator = $('.mdl-layout__obfuscator');
       if (obfuscator.is('.is-visible')) {
-        obfuscator.toggleClass('is-visible')
-        $('.mdl-layout__drawer').toggleClass('is-visible')
+        obfuscator.toggleClass('is-visible');
+        $('.mdl-layout__drawer').toggleClass('is-visible');
       }
     });
   });
 
-  function deferLoad(deferred) {
-    var source = deferred.getAttribute('data-src');
-    if (source) {
-      var img = new Image();
-      img.onload = function() {
-        deferred.setAttribute('src', source);
-      };
-      img.src = source;
-    }
-  }
-
   function init() {
-    var imgDefer = document.getElementsByTagName('img');
-    for (var i = 0; i < imgDefer.length; i++) {
-      deferLoad(imgDefer[i]);
-    }
-
     // Look up the latest version of the library.
     $.fn.latestVersion('com.github.oriley-me', 'toot', function (version) {
       $('.version').text(version);
       $('.version-hint').hide();
+
+      var badges = document.getElementsByClassName('jitpack-badge');
+      for (var i = 0; i < badges.length; ++i) {
+        badges[i].setAttribute('src', "https://img.shields.io/badge/JitPack-" + version + "-323232.svg?style=flat");
+      }
     });
   }
   window.onload = init;
