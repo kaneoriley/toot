@@ -23,26 +23,16 @@
             return
         }
 
-        var yql_url = 'https://query.yahooapis.com/v1/public/yql';
         var url = 'https://jitpack.io/api/builds/' + group + '/' + artifact + '/latest';
 
-        $.ajax({
-            'url': yql_url,
-            'data': {
-                'q': 'SELECT * FROM json WHERE url="'+url+'"',
-                'format': 'json',
-                'jsonCompat': 'new'
-            },
-            'dataType': 'jsonp',
-            'success': function(response) {
-                try {
-                    var version = response.query.results.json.version;
-                    if (typeof version !== "undefined") {
-                        callback(version)
-                    }
-                } catch (err) {
-                    console.log("Error parsing response: " + err.message);
+        $.getJSON(url, function(response) {
+            try {
+                var version = response.version;
+                if (typeof version !== "undefined") {
+                    callback(version)
                 }
+            } catch (err) {
+                console.log("Error parsing response: " + err.message);
             }
         });
     };
