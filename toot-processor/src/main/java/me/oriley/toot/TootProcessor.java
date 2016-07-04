@@ -40,6 +40,8 @@ public final class TootProcessor extends BaseProcessor {
     private static final String EVENT = "event";
     private static final String EVENT_CLASS = "eventClass";
     private static final String CLS = "cls";
+    private static final String VALUE = "value";
+    private static final String UNCHECKED = "unchecked";
 
     @NonNull
     private Filer mFiler;
@@ -159,6 +161,8 @@ public final class TootProcessor extends BaseProcessor {
                 .addModifiers(Modifier.PROTECTED)
                 .addAnnotation(Nullable.class)
                 .addAnnotation(Override.class)
+                .addAnnotation(AnnotationSpec.builder(SuppressWarnings.class)
+                        .addMember(VALUE, "$S", UNCHECKED).build())
                 .addCode(generateAbstractProducer(typeElement, producerMethods))
                 .returns(Producer.class);
 
